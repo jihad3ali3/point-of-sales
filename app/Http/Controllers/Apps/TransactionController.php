@@ -796,13 +796,7 @@ class TransactionController extends Controller
             ->orderByDesc('created_at');
 
         $warehouseIds = $this->outletAccessService->warehousesFor($request->user())->pluck('id');
-        $query->where(function (Builder $builder) use ($warehouseIds) {
-            $builder->whereIn('warehouse_id', $warehouseIds);
-
-            if (Outlet::active()->count() <= 1) {
-                $builder->orWhereNull('warehouse_id');
-            }
-        });
+        $query->whereIn('warehouse_id', $warehouseIds);
 
         if ($salesReturnTablesReady) {
             $query->with('details.salesReturnItems.salesReturn:id,status');

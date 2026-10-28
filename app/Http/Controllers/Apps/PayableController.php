@@ -225,8 +225,6 @@ class PayableController extends Controller
 
             if ($warehouseIds->isEmpty()) {
                 $builder->whereRaw('1 = 0');
-            } elseif (Outlet::active()->count() <= 1) {
-                $builder->orWhereDoesntHave('purchaseOrder');
             }
         });
     }

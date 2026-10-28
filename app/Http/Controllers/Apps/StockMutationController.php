@@ -40,9 +40,6 @@ class StockMutationController extends Controller
                     $query->whereRaw('1 = 0');
                 } else {
                     $query->whereIn('warehouse_id', $warehouseIds);
-                    if (Outlet::active()->count() <= 1) {
-                        $query->orWhereNull('warehouse_id');
-                    }
                 }
             })
             ->latest()

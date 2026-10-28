@@ -34,9 +34,7 @@ class ImportExportController extends Controller
         $warehouseIds = $request->user()->isSuperAdmin()
             ? null
             : $this->outletAccessService->warehousesFor($request->user())->pluck('id')->all();
-        $includeLegacy = Outlet::active()->count() <= 1;
-
-        return Excel::download(new TransactionsExport($request, $warehouseIds, $includeLegacy), 'transaksi.xlsx');
+        return Excel::download(new TransactionsExport($request, $warehouseIds), 'transaksi.xlsx');
     }
 
     public function importProducts(Request $request)

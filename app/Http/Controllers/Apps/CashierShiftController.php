@@ -228,10 +228,6 @@ class CashierShiftController extends Controller
             return collect([$user->only(['id', 'name'])]);
         }
 
-        if (Outlet::active()->count() <= 1) {
-            return User::query()->orderBy('name')->get(['id', 'name']);
-        }
-
         $outletIds = $this->outletAccessService->accessibleOutlets($user)->pluck('id')->all();
 
         return User::query()

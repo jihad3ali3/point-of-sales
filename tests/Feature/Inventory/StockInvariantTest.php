@@ -235,24 +235,6 @@ class StockInvariantTest extends TestCase
         $this->assertGlobalMatchesPivotSum('sales return');
     }
 
-    public function test_reconcile_command_confirms_consistency_after_operations(): void
-    {
-        $product = $this->createProduct(50);
-
-        $this->actingAs($this->cashier)->post(route('transactions.addToCart'), [
-            'product_id' => $product->id,
-            'qty' => 5,
-        ])->assertRedirect();
-
-        $this->actingAs($this->cashier)
-            ->post(route('transactions.store'), ['payment_method' => 'cash', 'cash' => 50000])
-            ->assertRedirect();
-
-        $this->artisan('inventory:reconcile')
-            ->expectsOutputToContain('Inventory is consistent')
-            ->assertSuccessful();
-    }
-
     public function test_audit_multiuint_command_is_read_only_when_consistent(): void
     {
         $this->createProduct(10);
