@@ -18,10 +18,15 @@ class ReorderService
                     ->whereColumn('product_warehouse.stock', '<=', 'products.min_stock');
             });
         } else {
-            $query->whereColumn('stock', '<=', 'min_stock');
+            $query->whereHas('warehouses', function ($q) {
+                $q->whereColumn('product_warehouse.stock', '<=', 'products.min_stock');
+            });
         }
 
-        return $query->orderBy('stock')->limit(20)->get();
+        return $query
+            ->orderByRaw('(SELECT COALESCE(SUM(stock), 0) FROM product_warehouse WHERE product_warehouse.product_id = products.id)')
+            ->limit(20)
+            ->get();
     }
 
     public function createDraftPurchaseOrder(Collection $products, int $userId, ?int $warehouseId = null): ?PurchaseOrder

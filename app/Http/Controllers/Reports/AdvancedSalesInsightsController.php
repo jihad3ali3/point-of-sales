@@ -219,7 +219,7 @@ class AdvancedSalesInsightsController extends Controller
                 products.title as product_title,
                 products.sku as product_sku,
                 categories.name as category_name,
-                COALESCE(ws.current_stock, products.stock) as current_stock,
+                COALESCE(ws.current_stock, 0) as current_stock,
                 COALESCE(sales.qty_sold, 0) as qty_sold,
                 COALESCE(sales.revenue_total, 0) as revenue_total,
                 COALESCE(sales.profit_total, 0) as profit_total,
@@ -489,7 +489,7 @@ class AdvancedSalesInsightsController extends Controller
                 products.title as product_title,
                 products.sku as product_sku,
                 categories.name as category_name,
-                COALESCE(ws.current_stock, products.stock) as current_stock,
+                COALESCE(ws.current_stock, 0) as current_stock,
                 COALESCE(sales.qty_sold, 0) as qty_sold,
                 COALESCE(sales.revenue_total, 0) as revenue_total,
                 sales.last_sold_at as last_sold_at

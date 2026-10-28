@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -116,6 +117,34 @@ class Product extends Model
      * Total on-hand stock across every warehouse. `product_warehouse` is the
      * only stock record; there is no global products.stock column.
      */
+    /**
+     * Products with sellable stock, optionally limited to one warehouse.
+     */
+    public function scopeInStock(Builder $query, ?int $warehouseId = null): Builder
+    {
+        return $query->whereHas('warehouses', function ($warehouses) use ($warehouseId) {
+            $warehouses->where('product_warehouse.stock', '>', 0);
+
+            if ($warehouseId) {
+                $warehouses->where('product_warehouse.warehouse_id', $warehouseId);
+            }
+        });
+    }
+
+    /**
+     * Products with no stock at all (optionally within one warehouse).
+     */
+    public function scopeOutOfStock(Builder $query, ?int $warehouseId = null): Builder
+    {
+        return $query->whereDoesntHave('warehouses', function ($warehouses) use ($warehouseId) {
+            $warehouses->where('product_warehouse.stock', '>', 0);
+
+            if ($warehouseId) {
+                $warehouses->where('product_warehouse.warehouse_id', $warehouseId);
+            }
+        });
+    }
+
     public function stockTotal(): int
     {
         if ($this->relationLoaded('warehouses')) {

@@ -141,16 +141,12 @@ class DemoDatabaseResetter
             throw new RuntimeException('Demo seeding requires product and warehouse stock tables.');
         }
 
-        $inconsistent = DB::table('products')
-            ->leftJoin('product_warehouse', 'products.id', '=', 'product_warehouse.product_id')
-            ->select('products.id', 'products.stock')
-            ->selectRaw('COALESCE(SUM(product_warehouse.stock), 0) as warehouse_stock')
-            ->groupBy('products.id', 'products.stock')
-            ->havingRaw('products.stock != COALESCE(SUM(product_warehouse.stock), 0)')
+        $negative = DB::table('product_warehouse')
+            ->where('stock', '<', 0)
             ->exists();
 
-        if ($inconsistent) {
-            throw new RuntimeException('Demo seeding produced inconsistent product and warehouse stock totals.');
+        if ($negative) {
+            throw new RuntimeException('Demo seeding produced a negative warehouse stock row.');
         }
     }
 }
