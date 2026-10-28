@@ -11,6 +11,7 @@ Dokumentasi ini ditujukan untuk developer yang ingin setup, memahami alur modul,
 
 ### Arsitektur
 - `docs/architecture-overview.md` — stack, middleware, service layer
+- `docs/database-schema-guide-ar.md` — دليل عربي لجداول قاعدة البيانات والأعمدة والعلاقات وسيناريوهات الاستخدام
 - `docs/feature-index.md` — indeks semua modul
 
 ### POS & Transaksi
