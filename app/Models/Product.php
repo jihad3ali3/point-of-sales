@@ -114,10 +114,6 @@ class Product extends Model
     }
 
     /**
-     * Total on-hand stock across every warehouse. `product_warehouse` is the
-     * only stock record; there is no global products.stock column.
-     */
-    /**
      * Products with sellable stock, optionally limited to one warehouse.
      */
     public function scopeInStock(Builder $query, ?int $warehouseId = null): Builder
@@ -145,6 +141,10 @@ class Product extends Model
         });
     }
 
+    /**
+     * Total on-hand stock across every warehouse. `product_warehouse` is the
+     * only stock record; there is no global products.stock column.
+     */
     public function stockTotal(): int
     {
         if ($this->relationLoaded('warehouses')) {
