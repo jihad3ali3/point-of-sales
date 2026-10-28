@@ -89,7 +89,7 @@ class CashierShiftController extends Controller
             actor: $request->user(),
             openingCash: (int) $request->validated('opening_cash'),
             notes: $request->validated('notes'),
-            warehouseId: $warehouse?->id,
+            warehouseId: $warehouse->id,
         );
 
         $this->auditLogService->log(

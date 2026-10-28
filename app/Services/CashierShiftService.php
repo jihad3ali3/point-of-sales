@@ -49,7 +49,7 @@ class CashierShiftService
         return $shift;
     }
 
-    public function openShift(User $cashier, User $actor, int $openingCash, ?string $notes = null, int $warehouseId = 0): CashierShift
+    public function openShift(User $cashier, User $actor, int $openingCash, ?string $notes, int $warehouseId): CashierShift
     {
         $existing = CashierShift::query()
             ->open()
