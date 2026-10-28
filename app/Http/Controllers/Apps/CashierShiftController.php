@@ -7,7 +7,6 @@ use App\Http\Requests\CloseCashierShiftRequest;
 use App\Http\Requests\ConfirmPasswordForForceCloseRequest;
 use App\Http\Requests\StoreCashierShiftRequest;
 use App\Models\CashierShift;
-use App\Models\Outlet;
 use App\Models\ShiftCashMovement;
 use App\Models\User;
 use App\Models\Warehouse;

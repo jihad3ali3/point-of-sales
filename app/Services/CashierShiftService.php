@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\CashierShift;
-use App\Models\Outlet;
 use App\Models\SalesReturn;
 use App\Models\ShiftCashMovement;
 use App\Models\Transaction;

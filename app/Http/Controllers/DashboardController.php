@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CashierShift;
 use App\Models\Category;
 use App\Models\Customer;
-use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Profit;
 use App\Models\Setting;

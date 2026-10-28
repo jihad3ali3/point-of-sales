@@ -474,9 +474,6 @@ class SampleDataSeeder extends Seeder
                     ->where('product_id', $item['product']->id)
                     ->where('warehouse_id', $warehouse->id)
                     ->decrement('stock', $item['qty']);
-                $item['product']->update([
-                    'stock' => (int) $item['product']->warehouses()->sum('product_warehouse.stock'),
-                ]);
             }
         }
     }

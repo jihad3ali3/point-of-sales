@@ -8,7 +8,6 @@ use App\Exports\TransactionsExport;
 use App\Http\Controllers\Controller;
 use App\Imports\CustomersImport;
 use App\Imports\ProductsImport;
-use App\Models\Outlet;
 use App\Services\OutletAccessService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromArray;

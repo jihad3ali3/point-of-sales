@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
 use App\Models\BankAccount;
-use App\Models\Outlet;
 use App\Models\Payable;
 use App\Models\PayablePayment;
 use App\Models\Supplier;

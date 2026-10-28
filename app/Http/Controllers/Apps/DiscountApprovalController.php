@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscountApprovalLog;
-use App\Models\Outlet;
 use App\Models\Transaction;
 use App\Services\AuditLogService;
 use App\Services\OutletAccessService;

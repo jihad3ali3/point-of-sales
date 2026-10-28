@@ -16,6 +16,10 @@ All notable application releases are listed here. Git tags using the same
   - Removed `php artisan outlet:legacy-audit` and `php artisan inventory:reconcile`. `outlet:audit` now verifies fresh-install invariants (warehouse→outlet link, user assignment, sales outlet coverage, PUSAT central-only).
   - Cashier shifts now require an explicit warehouse for every new shift.
 
+### Migrations
+
+- `2026_10_28_000002_backfill_outlet_scope` — repairs pre-outlet data on upgrade: creates/links the `PUSAT` outlet, assigns unassigned users, adopts orphan warehouses, and fills empty `warehouse_id` columns. Idempotent and non-destructive.
+
 ### Added
 
 - `manager` role and `manager@gmail.com` demo account (scoped to outlets MAL + TKB) to demonstrate multi-outlet RBAC without super-admin privileges.

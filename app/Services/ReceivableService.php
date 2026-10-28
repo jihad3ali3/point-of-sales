@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Models\Outlet;
 use App\Models\Receivable;
 use Illuminate\Support\Collection;
 

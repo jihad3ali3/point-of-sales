@@ -11,7 +11,6 @@ use App\Models\CustomerCampaignLog;
 use App\Models\CustomerSegment;
 use App\Models\CustomerVoucher;
 use App\Models\LoyaltyPointHistory;
-use App\Models\Outlet;
 use App\Models\PricingRule;
 use App\Models\Product;
 use App\Models\Transaction;

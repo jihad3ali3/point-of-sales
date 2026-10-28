@@ -10,7 +10,6 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerVoucher;
 use App\Models\DiscountApprovalLog;
-use App\Models\Outlet;
 use App\Models\PaymentSetting;
 use App\Models\Product;
 use App\Models\Transaction;

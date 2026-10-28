@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
-use App\Models\Outlet;
 use App\Services\CrmAutomationService;
 use App\Services\OutletAccessService;
 use Illuminate\Http\Request;
