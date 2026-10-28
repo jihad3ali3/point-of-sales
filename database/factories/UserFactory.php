@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Outlet;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,30 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Every user belongs to at least one outlet. The factory joins the default
+     * sales outlet when the fixture already provides one, so tests never end up
+     * with an account the strict access layer rejects.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            if ($user->outlets()->exists()) {
+                return;
+            }
+
+            $outlet = Outlet::query()
+                ->where('is_active', true)
+                ->orderByDesc('is_sales_enabled')
+                ->orderBy('code')
+                ->first();
+
+            if ($outlet) {
+                $user->outlets()->syncWithoutDetaching([$outlet->id => ['is_default' => true]]);
+            }
+        });
     }
 
     /**

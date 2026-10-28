@@ -36,7 +36,7 @@ class CartValidationTest extends TestCase
             'image' => 'category.png',
         ]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

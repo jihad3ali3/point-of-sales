@@ -49,7 +49,7 @@ class OutletPricingContextTest extends TestCase
             'is_sales_enabled' => true,
         ]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'WH-PB',
             'name' => 'Gudang Phase B',
             'status' => 'active',

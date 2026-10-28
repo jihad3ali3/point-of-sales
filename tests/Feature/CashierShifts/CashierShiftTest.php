@@ -334,7 +334,7 @@ class CashierShiftTest extends TestCase
             'is_sales_enabled' => true,
         ]);
 
-        $pusat = Warehouse::create([
+        $pusat = Warehouse::factory()->create([
             'outlet_id' => $outletPusat->id,
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
@@ -342,7 +342,7 @@ class CashierShiftTest extends TestCase
             'is_active' => true,
             'sort_order' => 0,
         ]);
-        $mal = Warehouse::create([
+        $mal = Warehouse::factory()->create([
             'outlet_id' => $outletMal->id,
             'code' => 'WH-MAL',
             'name' => 'Gudang Malabar',
@@ -387,7 +387,7 @@ class CashierShiftTest extends TestCase
             'is_sales_enabled' => true,
         ]);
 
-        Warehouse::create([
+        Warehouse::factory()->create([
             'outlet_id' => $outletPusat->id,
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
@@ -395,7 +395,7 @@ class CashierShiftTest extends TestCase
             'is_active' => true,
             'sort_order' => 0,
         ]);
-        $mal = Warehouse::create([
+        $mal = Warehouse::factory()->create([
             'outlet_id' => $outletMal->id,
             'code' => 'WH-MAL',
             'name' => 'Gudang Malabar',

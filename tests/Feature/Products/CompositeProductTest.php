@@ -36,7 +36,7 @@ class CompositeProductTest extends TestCase
         $this->admin = User::where('email', 'arya@gmail.com')->first();
         $this->admin->markEmailAsVerified();
 
-        $this->pusat = Warehouse::create([
+        $this->pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

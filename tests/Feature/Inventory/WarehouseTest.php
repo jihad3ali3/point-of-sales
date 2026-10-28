@@ -30,7 +30,7 @@ class WarehouseTest extends TestCase
         $this->withSession($this->recentlyConfirmedSession());
 
         // Seed default warehouse
-        $pusat = Warehouse::create([
+        $pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

@@ -114,7 +114,7 @@ class OrderTypeNoteTest extends TestCase
         $cashier->markEmailAsVerified();
         $cashier->givePermissionTo(['transactions-access', 'cashier-shifts-access']);
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Utama',
             'type' => 'main',

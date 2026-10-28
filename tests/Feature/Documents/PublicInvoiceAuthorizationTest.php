@@ -35,7 +35,7 @@ class PublicInvoiceAuthorizationTest extends TestCase
             'description' => 'Kategori untuk test',
         ]);
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

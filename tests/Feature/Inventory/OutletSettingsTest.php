@@ -52,7 +52,7 @@ class OutletSettingsTest extends TestCase
     public function test_receipt_uses_transaction_warehouse_outlet_profile(): void
     {
         $outlet = Outlet::create(['code' => 'MAL', 'name' => 'Malabar']);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'MAL',
             'name' => 'Malabar',
             'type' => 'branch',

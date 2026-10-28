@@ -45,7 +45,7 @@ class StockInvariantTest extends TestCase
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
         $this->cashier->markEmailAsVerified();
 
-        $this->pusat = Warehouse::create([
+        $this->pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -53,7 +53,7 @@ class StockInvariantTest extends TestCase
             'sort_order' => 0,
         ]);
 
-        $this->branch = Warehouse::create([
+        $this->branch = Warehouse::factory()->create([
             'code' => 'CABANG',
             'name' => 'Gudang Cabang',
             'type' => 'branch',

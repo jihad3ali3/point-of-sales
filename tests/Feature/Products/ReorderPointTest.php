@@ -31,7 +31,7 @@ class ReorderPointTest extends TestCase
             'description' => 'Kategori untuk test',
         ]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -103,7 +103,7 @@ class ReorderPointTest extends TestCase
 
     public function test_generate_creates_per_warehouse_po_using_pivot_stock(): void
     {
-        $otherWarehouse = Warehouse::create([
+        $otherWarehouse = Warehouse::factory()->create([
             'code' => 'CABANG-PB',
             'name' => 'Gudang Cabang PB',
             'type' => 'branch',

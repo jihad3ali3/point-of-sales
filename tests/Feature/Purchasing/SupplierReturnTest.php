@@ -91,7 +91,7 @@ class SupplierReturnTest extends TestCase
             'supplier-returns-update',
         ]);
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'name' => 'PUSAT',
             'code' => 'PUSAT',
             'type' => 'main',

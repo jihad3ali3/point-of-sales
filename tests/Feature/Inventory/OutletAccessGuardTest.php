@@ -48,11 +48,11 @@ class OutletAccessGuardTest extends TestCase
         $this->outletA = Outlet::create(['code' => 'MAL', 'name' => 'Malabar', 'is_active' => true]);
         $this->outletB = Outlet::create(['code' => 'PUT', 'name' => 'Puter', 'is_active' => true]);
 
-        $this->warehouseA = Warehouse::create([
+        $this->warehouseA = Warehouse::factory()->create([
             'code' => 'MAL', 'name' => 'Malabar', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 0, 'outlet_id' => $this->outletA->id,
         ]);
-        $this->warehouseB = Warehouse::create([
+        $this->warehouseB = Warehouse::factory()->create([
             'code' => 'PUT', 'name' => 'Puter', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 1, 'outlet_id' => $this->outletB->id,
         ]);
