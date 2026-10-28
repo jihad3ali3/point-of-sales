@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Payable;
-use App\Models\Outlet;
 use App\Models\Supplier;
 use Illuminate\Support\Collection;
 
@@ -40,13 +39,11 @@ class PayableAgingService
         return $query->where(function ($builder) use ($warehouseIds) {
             if ($warehouseIds->isEmpty()) {
                 $builder->whereRaw('1 = 0');
-            } else {
-                $builder->whereHas('purchaseOrder', fn ($purchaseOrder) => $purchaseOrder->whereIn('warehouse_id', $warehouseIds));
 
-                if ($this->singleOutlet()) {
-                    $builder->orWhereDoesntHave('purchaseOrder');
-                }
+                return;
             }
+
+            $builder->whereHas('purchaseOrder', fn ($purchaseOrder) => $purchaseOrder->whereIn('warehouse_id', $warehouseIds));
         });
     }
 
@@ -90,8 +87,4 @@ class PayableAgingService
             ]);
     }
 
-    private function singleOutlet(): bool
-    {
-        return Outlet::active()->count() <= 1;
-    }
 }

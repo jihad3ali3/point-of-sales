@@ -5,6 +5,21 @@ All notable application releases are listed here. Git tags using the same
 
 ## [Unreleased]
 
+### Removed
+
+- **Legacy single-outlet compatibility layer.** The outlet boundary is now strict and unconditional; a maintenance install behaves exactly like a fresh install.
+  - `security.outlet.legacy_single_outlet_bypass` (`SECURITY_LEGACY_SINGLE_OUTLET_BYPASS`) is gone. There is no implicit access for unassigned users.
+  - `OutletAccessService::legacySingleOutletBypass()` was deleted; `canUseWarehouse()` and `canSellAtWarehouse()` now reject warehouses without an active, assigned, sales-enabled outlet.
+  - `warehousesFor()` returns an empty set for users without outlet assignments instead of every warehouse.
+  - Every `Outlet::active()->count() <= 1` special case was removed from dashboard, notifications, transactions, stock mutations, discount approvals, CRM reminders, dine-in orders, payables, receivables, cashier shifts, and advanced sales insights.
+  - `TransactionsExport` no longer accepts an `includeLegacy` flag.
+  - Removed `php artisan outlet:legacy-audit` and `php artisan inventory:reconcile`. `outlet:audit` now verifies fresh-install invariants (warehouse→outlet link, user assignment, sales outlet coverage, PUSAT central-only).
+  - Cashier shifts now require an explicit warehouse for every new shift.
+
+### Migrations
+
+- `2026_10_28_000002_backfill_outlet_scope` — repairs pre-outlet data on upgrade: creates/links the `PUSAT` outlet, assigns unassigned users, adopts orphan warehouses, and fills empty `warehouse_id` columns. Idempotent and non-destructive.
+
 ### Added
 
 - `manager` role and `manager@gmail.com` demo account (scoped to outlets MAL + TKB) to demonstrate multi-outlet RBAC without super-admin privileges.

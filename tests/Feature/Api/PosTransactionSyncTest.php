@@ -31,7 +31,7 @@ class PosTransactionSyncTest extends TestCase
     private function setUpPosFixtures(): void
     {
         $this->cashier = User::factory()->create();
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'WH-SYNC',
             'name' => 'Gudang Sync',
             'status' => 'active',

@@ -104,20 +104,4 @@ class PhaseTwoSecurityHardeningTest extends TestCase
 
         $this->assertNull($response->headers->get('Strict-Transport-Security'));
     }
-
-    public function test_legacy_single_outlet_bypass_can_be_disabled(): void
-    {
-        config()->set('security.outlet.legacy_single_outlet_bypass', false);
-
-        $outlet = Outlet::create(['code' => 'PUSAT', 'name' => 'Pusat']);
-        $warehouse = Warehouse::create([
-            'code' => 'PUSAT', 'name' => 'Gudang Pusat', 'type' => 'main',
-            'is_active' => true, 'sort_order' => 0, 'outlet_id' => $outlet->id,
-        ]);
-
-        $this->assertFalse(
-            app(OutletAccessService::class)
-                ->canUseWarehouse(User::factory()->create(), $warehouse)
-        );
-    }
 }

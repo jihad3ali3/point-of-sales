@@ -67,7 +67,7 @@ class SplitPaymentTest extends TestCase
         $cashier->markEmailAsVerified();
         $cashier->givePermissionTo('transactions-access');
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Utama',
             'type' => 'main',

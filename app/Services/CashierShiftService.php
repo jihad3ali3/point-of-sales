@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\CashierShift;
-use App\Models\Outlet;
 use App\Models\SalesReturn;
 use App\Models\ShiftCashMovement;
 use App\Models\Transaction;
@@ -49,7 +48,7 @@ class CashierShiftService
         return $shift;
     }
 
-    public function openShift(User $cashier, User $actor, int $openingCash, ?string $notes = null, ?int $warehouseId = null): CashierShift
+    public function openShift(User $cashier, User $actor, int $openingCash, ?string $notes, int $warehouseId): CashierShift
     {
         $existing = CashierShift::query()
             ->open()
@@ -250,10 +249,6 @@ class CashierShiftService
         }
 
         if ($user->can('cashier-shifts-force-close')) {
-            if (Outlet::active()->count() <= 1) {
-                return $query;
-            }
-
             $warehouseIds = $this->outletAccessService->warehousesFor($user)->pluck('id')->all();
 
             return $query->where(function (Builder $query) use ($user, $warehouseIds) {

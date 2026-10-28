@@ -295,7 +295,7 @@ class TransactionFlowTest extends TestCase
     public function test_transaction_history_includes_legacy_null_warehouse_in_single_outlet_install(): void
     {
         $cashier = $this->createCashier();
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -343,14 +343,14 @@ class TransactionFlowTest extends TestCase
             'is_active' => true,
             'is_sales_enabled' => true,
         ]);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'outlet_id' => $outletA->id,
             'code' => 'WH-MAL',
             'name' => 'Gudang Malabar',
             'type' => 'branch',
             'is_active' => true,
         ]);
-        Warehouse::create([
+        Warehouse::factory()->create([
             'outlet_id' => $outletB->id,
             'code' => 'WH-TKB',
             'name' => 'Gudang Taman Kencana',

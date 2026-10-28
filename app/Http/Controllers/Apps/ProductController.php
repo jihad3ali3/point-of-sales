@@ -108,7 +108,6 @@ class ProductController extends Controller
             'category_id' => $request->category_id,
             'buy_price' => $request->buy_price,
             'sell_price' => $request->sell_price,
-            'stock' => $request->stock,
             'min_stock' => $request->min_stock ?? 0,
             'max_stock' => $request->max_stock ?? 0,
             'tax_type' => $request->input('tax_type', 'exclusive'),
@@ -122,7 +121,7 @@ class ProductController extends Controller
         } else {
             $this->syncUnits($product, $request->input('units'));
 
-            // ponytail: keep global products.stock and per-warehouse pivot in sync; PUSAT (first active main) is the default warehouse
+            // Opening stock lives in the product_warehouse pivot only.
             $warehouse = Warehouse::find($request->warehouse_id)
                 ?? Warehouse::active()->where('type', 'main')->orderBy('sort_order')->orderBy('code')->first()
                 ?? Warehouse::active()->orderBy('sort_order')->orderBy('code')->first();

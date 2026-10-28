@@ -21,16 +21,13 @@ class TransactionsExport implements FromCollection, ShouldAutoSize, WithHeadings
      */
     protected ?array $warehouseIds;
 
-    protected bool $includeLegacy;
-
     /**
      * @param  array<int>|null  $warehouseIds
      */
-    public function __construct(Request $request, ?array $warehouseIds = null, bool $includeLegacy = false)
+    public function __construct(Request $request, ?array $warehouseIds = null)
     {
         $this->request = $request;
         $this->warehouseIds = $warehouseIds;
-        $this->includeLegacy = $includeLegacy;
     }
 
     public function collection(): Collection
@@ -39,22 +36,13 @@ class TransactionsExport implements FromCollection, ShouldAutoSize, WithHeadings
 
         return Transaction::with(['customer:id,name', 'cashier:id,name', 'tenders:id,transaction_id,method,amount'])
             ->when($this->warehouseIds !== null, function ($query) {
-                $query->where(function ($query) {
-                    if ($this->warehouseIds === []) {
-                        if ($this->includeLegacy) {
-                            $query->whereNull('warehouse_id');
-                        } else {
-                            $query->whereRaw('1 = 0');
-                        }
+                if ($this->warehouseIds === []) {
+                    $query->whereRaw('1 = 0');
 
-                        return;
-                    }
+                    return;
+                }
 
-                    $query->whereIn('warehouse_id', $this->warehouseIds);
-                    if ($this->includeLegacy) {
-                        $query->orWhereNull('warehouse_id');
-                    }
-                });
+                $query->whereIn('warehouse_id', $this->warehouseIds);
             })
             ->when($requestedWarehouse, fn ($q, $id) => $q->where('warehouse_id', $id))
             ->when($this->request->start_date, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))

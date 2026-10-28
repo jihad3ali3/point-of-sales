@@ -2,56 +2,39 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Outlet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class AuditOutletCommand extends Command
 {
-    protected $signature = 'outlet:audit {--strict : Exit with failure when rollout invariants are not clean}';
+    protected $signature = 'outlet:audit {--strict : Exit with failure when an invariant is violated}';
 
-    protected $description = 'Report outlet, warehouse, assignment, legacy-location, and stock data without changing it';
+    protected $description = 'Verify outlet, warehouse, assignment, and per-outlet stock invariants';
 
     public function handle(): int
     {
-        if (! Schema::hasTable('outlets') || ! Schema::hasTable('warehouses')) {
-            $this->warn('Outlet schema is not installed. Run migrations first.');
+        $this->info('Outlet audit (read-only)');
 
-            return self::SUCCESS;
-        }
+        $outlets = DB::table('outlets')->count();
+        $activeOutlets = DB::table('outlets')->where('is_active', true)->count();
+        $salesOutlets = DB::table('outlets')->where('is_active', true)->where('is_sales_enabled', true)->count();
+        $warehouses = DB::table('warehouses')->count();
 
-        $this->info('Outlet data audit (read-only)');
-        $this->line('Outlets: '.DB::table('outlets')->count());
-        $this->line('Active outlets: '.DB::table('outlets')->where('is_active', true)->count());
-        $this->line('Sales-enabled outlets: '.DB::table('outlets')->where('is_sales_enabled', true)->count());
-        $this->line('Warehouses: '.DB::table('warehouses')->count());
-        $warehousesWithoutOutlet = DB::table('warehouses')->whereNull('outlet_id')->count();
-        $this->line('Warehouses without outlet: '.$warehousesWithoutOutlet);
-        $issues = $warehousesWithoutOutlet > 0
-            ? ["{$warehousesWithoutOutlet} warehouses without outlet"]
-            : [];
-        if (Schema::hasTable('users') && Schema::hasTable('user_outlets')) {
-            $usersWithoutAssignment = DB::table('users')
-                ->whereNotExists(fn ($query) => $query->selectRaw('1')
-                    ->from('user_outlets')
-                    ->whereColumn('user_outlets.user_id', 'users.id'))
-                ->count();
-            $this->line('Users without outlet assignment: '.$usersWithoutAssignment);
-            if ($usersWithoutAssignment > 0) {
-                $issues[] = "{$usersWithoutAssignment} users without outlet assignment";
-            }
-        }
-        if (Schema::hasTable('cashier_shifts')) {
-            $this->line('Open shifts: '.DB::table('cashier_shifts')->where('status', 'open')->count());
-        }
+        $this->line("Outlets: {$outlets} ({$activeOutlets} active, {$salesOutlets} sales-enabled)");
+        $this->line("Warehouses: {$warehouses}");
 
         $issues = array_merge(
-            $issues,
-            $this->auditLegacyLocations(),
-            $this->auditStock(),
+            $this->auditWarehouseOutlets(),
+            $this->auditUserAssignments(),
+            $this->auditSalesOutletWarehouses(),
             $this->auditSettings(),
             $this->auditPusat(),
         );
+
+        if ($issues === []) {
+            $this->info('All outlet invariants hold.');
+        }
 
         if ($this->option('strict') && $issues !== []) {
             $this->error('Strict audit failed: '.implode('; ', $issues));
@@ -62,78 +45,72 @@ class AuditOutletCommand extends Command
         return self::SUCCESS;
     }
 
-    private function auditLegacyLocations(): array
+    private function auditWarehouseOutlets(): array
+    {
+        $orphans = DB::table('warehouses')->whereNull('outlet_id')->count();
+
+        $this->line("Warehouses without outlet: {$orphans}");
+
+        return $orphans > 0 ? ["{$orphans} warehouses without outlet"] : [];
+    }
+
+    private function auditUserAssignments(): array
+    {
+        $unassigned = DB::table('users')
+            ->whereNotExists(fn ($query) => $query->selectRaw('1')
+                ->from('user_outlets')
+                ->whereColumn('user_outlets.user_id', 'users.id'))
+            ->count();
+
+        $this->line("Users without outlet assignment: {$unassigned}");
+
+        return $unassigned > 0 ? ["{$unassigned} users without outlet assignment"] : [];
+    }
+
+    private function auditSalesOutletWarehouses(): array
     {
         $issues = [];
-        foreach ([
-            'transactions',
-            'carts',
-            'stock_mutations',
-            'cashier_shifts',
-            'purchase_orders',
-            'goods_receivings',
-            'supplier_returns',
-            'stock_opnames',
-        ] as $table) {
-            if (Schema::hasTable($table) && Schema::hasColumn($table, 'warehouse_id')) {
-                $count = DB::table($table)->whereNull('warehouse_id')->count();
-                $this->line("{$table} without warehouse: {$count}");
-                if ($count > 0) {
-                    $issues[] = "{$table} has {$count} legacy rows";
-                }
+
+        foreach (Outlet::query()->where('is_sales_enabled', true)->get(['id', 'code']) as $outlet) {
+            $count = DB::table('warehouses')
+                ->where('outlet_id', $outlet->id)
+                ->where('is_active', true)
+                ->count();
+
+            if ($count === 0) {
+                $issues[] = "sales outlet {$outlet->code} has no active warehouse";
             }
         }
 
         return $issues;
     }
 
-    private function auditStock(): array
-    {
-        if (! Schema::hasTable('products') || ! Schema::hasTable('product_warehouse')) {
-            return [];
-        }
-
-        $mismatches = DB::table('products')
-            ->leftJoin('product_warehouse', 'product_warehouse.product_id', '=', 'products.id')
-            ->select('products.id')
-            ->selectRaw('products.stock, COALESCE(SUM(product_warehouse.stock), 0) AS pivot_total')
-            ->groupBy('products.id', 'products.stock')
-            ->havingRaw('products.stock <> pivot_total')
-            ->count();
-
-        $this->line("Product stock mismatches: {$mismatches}");
-
-        return $mismatches > 0 ? ["{$mismatches} product stock mismatches"] : [];
-    }
-
     private function auditSettings(): array
     {
-        $issues = [];
         foreach (['settings', 'payment_settings', 'bank_accounts'] as $table) {
-            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'outlet_id')) {
-                continue;
-            }
-
             $global = DB::table($table)->whereNull('outlet_id')->count();
             $scoped = DB::table($table)->whereNotNull('outlet_id')->count();
             $this->line("{$table}: {$global} global, {$scoped} outlet-scoped");
         }
 
-        return $issues;
+        return [];
     }
 
     private function auditPusat(): array
     {
         $pusat = DB::table('outlets')->where('code', 'PUSAT')->first();
+
         if (! $pusat) {
             $this->warn('PUSAT outlet not found.');
+        } else {
+            $this->line('PUSAT sales enabled: '.((int) $pusat->is_sales_enabled ? 'yes' : 'no'));
+            $this->line('PUSAT warehouses: '.DB::table('warehouses')->where('outlet_id', $pusat->id)->count());
 
-            return ['PUSAT outlet not found'];
+            if ($pusat->is_sales_enabled) {
+                return ['PUSAT is sales-enabled'];
+            }
         }
 
-        $this->line('PUSAT sales enabled: '.((int) $pusat->is_sales_enabled ? 'yes' : 'no'));
-        $this->line('PUSAT warehouses: '.DB::table('warehouses')->where('outlet_id', $pusat->id)->count());
-
-        return $pusat->is_sales_enabled ? ['PUSAT is sales-enabled'] : [];
+        return [];
     }
 }

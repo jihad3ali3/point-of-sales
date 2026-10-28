@@ -43,7 +43,9 @@ class StockMutationService
 
     public function recordInitialStock(Product $product, ?int $userId = null, ?int $warehouseId = null): ?StockMutation
     {
-        $initialStock = (int) $product->stock;
+        $initialStock = (int) ($product->warehouses()
+            ->where('warehouse_id', $warehouseId)
+            ->first()?->pivot->stock ?? 0);
 
         if ($initialStock <= 0) {
             return null;

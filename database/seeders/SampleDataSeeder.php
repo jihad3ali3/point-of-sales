@@ -24,6 +24,12 @@ use Illuminate\Support\Str;
 class SampleDataSeeder extends Seeder
 {
     /**
+     * Opening stock declared in the product fixture, keyed by barcode.
+     * Opening stock is written to the PUSAT warehouse pivot, never to the product row.
+     */
+    private array $initialStock = [];
+
+    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -65,11 +71,14 @@ class SampleDataSeeder extends Seeder
         foreach ($warehouses as $warehouse) {
             foreach ($products as $product) {
                 $product->warehouses()->syncWithoutDetaching([
-                    $warehouse->id => ['stock' => $warehouse->code === 'PUSAT' ? (int) $product->stock : 25],
+                    $warehouse->id => [
+                        'stock' => $warehouse->code === 'PUSAT'
+                            ? ($this->initialStock[$product->barcode] ?? 0)
+                            : 25,
+                    ],
                 ]);
             }
         }
-        $products->each(fn ($product) => $product->update(['stock' => (int) $product->warehouses()->sum('product_warehouse.stock')]));
     }
 
     /**
@@ -304,6 +313,8 @@ class SampleDataSeeder extends Seeder
         ]);
 
         return $products->map(function ($product) use ($categories) {
+            $this->initialStock[$product['barcode']] = (int) $product['stock'];
+
             $category = $categories->get($product['category']);
 
             // Download product image
@@ -322,7 +333,6 @@ class SampleDataSeeder extends Seeder
                 'description' => $product['description'],
                 'buy_price' => $product['buy_price'],
                 'sell_price' => $product['sell_price'],
-                'stock' => $product['stock'],
             ]);
         })->keyBy('barcode');
     }
@@ -464,9 +474,6 @@ class SampleDataSeeder extends Seeder
                     ->where('product_id', $item['product']->id)
                     ->where('warehouse_id', $warehouse->id)
                     ->decrement('stock', $item['qty']);
-                $item['product']->update([
-                    'stock' => (int) $item['product']->warehouses()->sum('product_warehouse.stock'),
-                ]);
             }
         }
     }

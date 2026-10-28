@@ -45,7 +45,7 @@ class BatchAllocationTest extends TestCase
 
         $this->cashierShiftService = app(CashierShiftService::class);
 
-        $this->pusat = Warehouse::create([
+        $this->pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

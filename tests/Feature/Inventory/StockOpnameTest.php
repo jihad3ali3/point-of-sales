@@ -130,7 +130,7 @@ class StockOpnameTest extends TestCase
             'stock-opnames-finalize',
         ]);
         $product = $this->createProduct(12);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'OPN',
             'name' => 'Gudang Opname',
             'type' => 'main',

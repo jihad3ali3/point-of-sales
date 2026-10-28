@@ -141,7 +141,7 @@ class SalesReturnTest extends TestCase
 
         [$transaction, $detail, $product] = $this->createTransaction($user, qty: 1, stock: 4);
         $shift = $this->openShiftFor($user);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'RET',
             'name' => 'Gudang Retur',
             'type' => 'main',
@@ -357,7 +357,7 @@ class SalesReturnTest extends TestCase
         // One box = 12 base units; stock currently 4 base units.
         [$transaction, $detail, $product] = $this->createTransaction($user, qty: 1, stock: 4, conversionFactor: 12);
         $this->openShiftFor($user);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'RET-MU',
             'name' => 'Gudang Retur Multi',
             'type' => 'main',
