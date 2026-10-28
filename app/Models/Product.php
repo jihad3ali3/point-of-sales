@@ -18,7 +18,6 @@ class Product extends Model
         'updated_at' => 'datetime',
         'buy_price' => 'integer',
         'sell_price' => 'integer',
-        'stock' => 'integer',
         'tax_rate' => 'decimal:2',
         'min_stock' => 'integer',
         'max_stock' => 'integer',
@@ -34,7 +33,6 @@ class Product extends Model
         'buy_price',
         'sell_price',
         'category_id',
-        'stock',
         'tax_type',
         'tax_rate',
         'min_stock',
@@ -114,9 +112,25 @@ class Product extends Model
         return $this->hasMany(PricingRule::class);
     }
 
+    /**
+     * Total on-hand stock across every warehouse. `product_warehouse` is the
+     * only stock record; there is no global products.stock column.
+     */
     public function stockTotal(): int
     {
+        if ($this->relationLoaded('warehouses')) {
+            return (int) $this->warehouses->sum(fn ($warehouse) => (int) $warehouse->pivot->stock);
+        }
+
         return (int) $this->warehouses()->sum('product_warehouse.stock');
+    }
+
+    /**
+     * Convenience read accessor so callers keep using `$product->stock`.
+     */
+    protected function stock(): Attribute
+    {
+        return Attribute::make(get: fn () => $this->stockTotal());
     }
 
     public function isLowStock(?int $warehouseId = null): bool

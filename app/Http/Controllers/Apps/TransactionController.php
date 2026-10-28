@@ -293,9 +293,7 @@ class TransactionController extends Controller
             $unitConversion = app(UnitConversionService::class);
             $baseQty = $unitConversion->toBaseUnit($product, $unitId, $validated['qty']);
 
-            $availableStock = $warehouseId
-                ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-                : (int) $product->stock;
+            $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
             if ($availableStock < $baseQty) {
                 return redirect()->back()->with('error', 'Stok tidak mencukupi.');
@@ -405,9 +403,7 @@ class TransactionController extends Controller
             ? (int) $request->qty
             : $unitConversion->toBaseUnit($product, (int) $cart->unit_id, $request->qty);
 
-        $availableStock = $warehouseId
-            ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-            : (int) $product->stock;
+        $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
         if ($availableStock < $baseQty) {
             return response()->json([

@@ -80,7 +80,6 @@ class FeatureDemoSeeder extends Seeder
             $this->seedDiscountApprovalLogs($cashier, $admin);
             $this->seedLoyaltyPointHistory($customers);
             $this->seedSplitPayment();
-            $this->syncGlobalStock();
         } finally {
             Auth::logout();
         }
@@ -126,19 +125,6 @@ class FeatureDemoSeeder extends Seeder
             'change' => 0,
             'bank_account_id' => $bankAccount->id,
         ]);
-    }
-
-    private function syncGlobalStock(): void
-    {
-        Product::query()
-            ->select('products.id')
-            ->selectRaw('COALESCE(SUM(product_warehouse.stock), 0) AS pivot_total')
-            ->leftJoin('product_warehouse', 'product_warehouse.product_id', '=', 'products.id')
-            ->groupBy('products.id')
-            ->get()
-            ->each(fn ($product) => Product::whereKey($product->id)->update([
-                'stock' => (int) $product->pivot_total,
-            ]));
     }
 
     private function requiredTablesExist(): bool
@@ -226,7 +212,7 @@ class FeatureDemoSeeder extends Seeder
                     'product_id' => $product->id,
                     'warehouse_id' => $pusat->id,
                 ],
-                ['stock' => max(0, (int) $product->stock)]
+                ['stock' => max(0, $product->stockTotal())]
             );
         }
 
@@ -318,7 +304,9 @@ class FeatureDemoSeeder extends Seeder
                 'batch_number' => $batchNumber,
                 'expired_at' => $expiredAt,
                 'received_at' => now()->subDays(30)->toDateString(),
-                'stock' => (int) floor($product->stock / 2),
+                'stock' => (int) floor(((int) ($product->warehouses()
+                    ->where('warehouse_id', $warehouses['pusat']->id)
+                    ->first()?->pivot->stock ?? 0)) / 2),
             ]);
         }
 

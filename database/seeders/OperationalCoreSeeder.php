@@ -292,9 +292,13 @@ class OperationalCoreSeeder extends Seeder
             'updated_at' => $completedAt,
         ]);
 
-        $stockBefore = (int) $product->stock;
+        $pivot = \App\Models\ProductWarehouse::firstOrCreate([
+            'product_id' => $product->id,
+            'warehouse_id' => $transaction->warehouse_id,
+        ], ['stock' => 0]);
+        $stockBefore = (int) $pivot->stock;
         $stockAfter = $stockBefore + $qtyReturn;
-        $product->update(['stock' => $stockAfter]);
+        $pivot->increment('stock', $qtyReturn);
 
         $stockMutationService->recordSalesReturnRestock(
             product: $product,

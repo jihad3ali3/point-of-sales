@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductWarehouse;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -13,6 +14,8 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 class ProductsImport implements ToModel, WithBatchInserts, WithChunkReading, WithHeadingRow, WithValidation
 {
     private int $rowCount = 0;
+
+    public function __construct(private readonly ?int $warehouseId = null) {}
 
     public function model(array $row)
     {
@@ -25,7 +28,7 @@ class ProductsImport implements ToModel, WithBatchInserts, WithChunkReading, Wit
 
         $barcode = (string) ($row['barcode'] ?? '');
 
-        return Product::updateOrCreate(
+        $product = Product::updateOrCreate(
             ['barcode' => $barcode],
             [
                 'sku' => $row['sku'] ?? $barcode,
@@ -34,13 +37,21 @@ class ProductsImport implements ToModel, WithBatchInserts, WithChunkReading, Wit
                 'category_id' => $category->id,
                 'buy_price' => (int) ($row['harga_beli'] ?? 0),
                 'sell_price' => (int) ($row['harga_jual'] ?? 0),
-                'stock' => (int) ($row['stok'] ?? 0),
                 'min_stock' => (int) ($row['min_stok'] ?? 0),
                 'max_stock' => (int) ($row['max_stok'] ?? 0),
                 'tax_type' => $row['tipe_pajak'] ?? 'exclusive',
                 'tax_rate' => (float) ($row['tarif_pajak'] ?? 11.00),
             ]
         );
+
+        if ($this->warehouseId !== null) {
+            ProductWarehouse::updateOrCreate(
+                ['product_id' => $product->id, 'warehouse_id' => $this->warehouseId],
+                ['stock' => (int) ($row['stok'] ?? 0)]
+            );
+        }
+
+        return $product;
     }
 
     public function rules(): array

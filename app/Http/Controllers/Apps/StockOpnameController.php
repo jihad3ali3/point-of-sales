@@ -244,25 +244,17 @@ class StockOpnameController extends Controller
 
                 $stockAfter = (int) $item->physical_stock;
 
-                if ($stockOpname->warehouse_id) {
-                    // ponytail: opname is per-warehouse — only touch that warehouse's pivot, then recompute the legacy aggregate
-                    $before = ProductWarehouse::where([
-                        'product_id' => $product->id,
-                        'warehouse_id' => $stockOpname->warehouse_id,
-                    ])->lockForUpdate()->first();
+                $before = ProductWarehouse::where([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $stockOpname->warehouse_id,
+                ])->lockForUpdate()->first();
 
-                    $stockBefore = (int) ($before?->stock ?? 0);
+                $stockBefore = (int) ($before?->stock ?? 0);
 
-                    ProductWarehouse::updateOrCreate(
-                        ['product_id' => $product->id, 'warehouse_id' => $stockOpname->warehouse_id],
-                        ['stock' => $stockAfter]
-                    );
-
-                    $product->update(['stock' => $product->stockTotal()]);
-                } else {
-                    $stockBefore = (int) $product->stock;
-                    $product->update(['stock' => $stockAfter]);
-                }
+                ProductWarehouse::updateOrCreate(
+                    ['product_id' => $product->id, 'warehouse_id' => $stockOpname->warehouse_id],
+                    ['stock' => $stockAfter]
+                );
 
                 $this->stockMutationService->recordStockOpnameAdjustment(
                     product: $product,

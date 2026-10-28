@@ -109,7 +109,7 @@ class DineOrderService
                             ->lockForUpdate()
                             ->first();
 
-                        $available = $pw ? (int) $pw->stock : (int) $component->stock;
+                        $available = (int) ($pw?->stock ?? 0);
 
                         if ($available < $componentQty) {
                             throw ValidationException::withMessages([
@@ -117,8 +117,7 @@ class DineOrderService
                             ]);
                         }
 
-                        $pw?->decrement('stock', $componentQty);
-                        $component->decrement('stock', $componentQty);
+                        $pw->decrement('stock', $componentQty);
 
                         $this->stockMutationService->recordMutation(
                             product: $component,
@@ -141,7 +140,7 @@ class DineOrderService
                         ->lockForUpdate()
                         ->first();
 
-                    $available = $pw ? (int) $pw->stock : (int) $product->stock;
+                    $available = (int) ($pw?->stock ?? 0);
 
                     if ($available < $baseQty) {
                         throw ValidationException::withMessages([
@@ -149,8 +148,7 @@ class DineOrderService
                         ]);
                     }
 
-                    $pw?->decrement('stock', $baseQty);
-                    $product->decrement('stock', $baseQty);
+                    $pw->decrement('stock', $baseQty);
 
                     $this->stockMutationService->recordMutation(
                         product: $product,

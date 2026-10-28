@@ -171,9 +171,7 @@ class PosApiController extends Controller
         // Attach warehouse stock if shift is active
         $products->through(function (Product $product) use ($warehouseId) {
             $data = (new ProductResource($product))->resolve();
-            $data['stock'] = $warehouseId
-                ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-                : (int) $product->stock;
+            $data['stock'] = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
             return $data;
         });
@@ -202,9 +200,7 @@ class PosApiController extends Controller
             return $this->notFound('Produk dengan barcode tersebut tidak ditemukan.');
         }
 
-        $stock = $warehouseId
-            ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-            : (int) $product->stock;
+        $stock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
         $data = (new ProductResource($product->load('category')))->resolve();
         $data['stock'] = $stock;
@@ -309,9 +305,7 @@ class PosApiController extends Controller
 
             $baseQty = $this->unitConversionService->toBaseUnit($product, $unitId, $validated['qty']);
 
-            $availableStock = $warehouseId
-                ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-                : (int) $product->stock;
+            $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
             if ($availableStock < $baseQty) {
                 return $this->error("Stok tidak mencukupi. Tersedia: {$availableStock}", 422);
@@ -376,9 +370,7 @@ class PosApiController extends Controller
 
         if (! $product->is_composite) {
             $baseQty = $this->unitConversionService->toBaseUnit($product, $cart->unit_id, $validated['qty']);
-            $availableStock = $warehouseId
-                ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-                : (int) $product->stock;
+            $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
             if ($availableStock < $baseQty) {
                 return $this->error("Stok tidak mencukupi. Tersedia: {$availableStock}", 422);

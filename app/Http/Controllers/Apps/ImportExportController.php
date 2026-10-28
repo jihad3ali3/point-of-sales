@@ -43,7 +43,8 @@ class ImportExportController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
         ]);
 
-        $import = new ProductsImport;
+        $warehouse = $this->outletAccessService->salesWarehousesFor($request->user())->first();
+        $import = new ProductsImport($warehouse?->id);
         Excel::import($import, $request->file('file'));
 
         $successCount = $import->getRowCount();

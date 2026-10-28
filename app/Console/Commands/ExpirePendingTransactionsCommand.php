@@ -122,25 +122,19 @@ class ExpirePendingTransactionsCommand extends Command
             return;
         }
 
-        if ($warehouseId) {
-            DB::table('product_warehouse')
-                ->where('product_id', $product->id)
-                ->where('warehouse_id', $warehouseId)
-                ->increment('stock', $qty);
-        }
-
-        $product->increment('stock', $qty);
+        DB::table('product_warehouse')
+            ->where('product_id', $product->id)
+            ->where('warehouse_id', $warehouseId)
+            ->increment('stock', $qty);
     }
 
     // ponytail: re-reads stock per detail; fine for an hourly batch of few rows
     private function stockAfterBefore($product, ?int $warehouseId, int $offset): int
     {
-        $current = (int) ($warehouseId
-            ? DB::table('product_warehouse')
-                ->where('product_id', $product->id)
-                ->where('warehouse_id', $warehouseId)
-                ->value('stock')
-            : $product->fresh()->stock);
+        $current = (int) DB::table('product_warehouse')
+            ->where('product_id', $product->id)
+            ->where('warehouse_id', $warehouseId)
+            ->value('stock');
 
         return $current - $offset;
     }

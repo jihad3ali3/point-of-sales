@@ -89,16 +89,13 @@ class GoodsReceivingService
                     $poItem->increment('qty_received', $qtyReceived);
 
                     $product = $poItem->product;
-                    $stockBefore = (int) $product->stock;
-                    // Increment legacy stock
-                    $product->increment('stock', $qtyReceived);
-                    // Increment warehouse pivot stock
-                    if ($order->warehouse_id) {
-                        ProductWarehouse::firstOrCreate(
-                            ['product_id' => $product->id, 'warehouse_id' => $order->warehouse_id],
-                            ['stock' => 0]
-                        )->increment('stock', $qtyReceived);
-                    }
+
+                    $pivot = ProductWarehouse::firstOrCreate(
+                        ['product_id' => $product->id, 'warehouse_id' => $order->warehouse_id],
+                        ['stock' => 0]
+                    );
+                    $stockBefore = (int) $pivot->stock;
+                    $pivot->increment('stock', $qtyReceived);
 
                     // Create batch record
                     if (! empty($item['batch_number']) && $order->warehouse_id) {
@@ -117,7 +114,7 @@ class GoodsReceivingService
                         goodsReceiving: $receiving,
                         qty: $qtyReceived,
                         stockBefore: $stockBefore,
-                        stockAfter: (int) $product->stock,
+                        stockAfter: $stockBefore + $qtyReceived,
                         notes: 'Penerimaan dari PO '.$order->document_number,
                         userId: $userId,
                     );
