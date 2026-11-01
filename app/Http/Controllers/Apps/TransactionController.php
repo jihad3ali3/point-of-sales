@@ -10,7 +10,6 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerVoucher;
 use App\Models\DiscountApprovalLog;
-use App\Models\Outlet;
 use App\Models\PaymentSetting;
 use App\Models\Product;
 use App\Models\Transaction;
@@ -98,13 +97,8 @@ class TransactionController extends Controller
 
         // get products with stock > 0 in active warehouse
         $products = Product::with(['category:id,name', 'units'])
-            ->select('id', 'barcode', 'title', 'description', 'image', 'buy_price', 'sell_price', 'stock', 'category_id')
-            ->when($warehouseId, function ($q) use ($warehouseId) {
-                $q->whereHas('warehouses', fn ($w) => $w->where('product_warehouse.warehouse_id', $warehouseId)
-                    ->where('product_warehouse.stock', '>', 0));
-            }, function ($q) {
-                $q->where('stock', '>', 0);
-            })
+            ->select('id', 'barcode', 'title', 'description', 'image', 'buy_price', 'sell_price', 'category_id')
+            ->inStock($warehouseId)
             ->orderBy('title')
             ->get();
         $pricingBadges = $this->pricingService->previewProducts($products, null, null, $outlet);
@@ -293,9 +287,7 @@ class TransactionController extends Controller
             $unitConversion = app(UnitConversionService::class);
             $baseQty = $unitConversion->toBaseUnit($product, $unitId, $validated['qty']);
 
-            $availableStock = $warehouseId
-                ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-                : (int) $product->stock;
+            $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
             if ($availableStock < $baseQty) {
                 return redirect()->back()->with('error', 'Stok tidak mencukupi.');
@@ -405,9 +397,7 @@ class TransactionController extends Controller
             ? (int) $request->qty
             : $unitConversion->toBaseUnit($product, (int) $cart->unit_id, $request->qty);
 
-        $availableStock = $warehouseId
-            ? (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0)
-            : (int) $product->stock;
+        $availableStock = (int) ($product->warehouses()->where('warehouse_id', $warehouseId)->first()?->pivot->stock ?? 0);
 
         if ($availableStock < $baseQty) {
             return response()->json([
@@ -796,13 +786,7 @@ class TransactionController extends Controller
             ->orderByDesc('created_at');
 
         $warehouseIds = $this->outletAccessService->warehousesFor($request->user())->pluck('id');
-        $query->where(function (Builder $builder) use ($warehouseIds) {
-            $builder->whereIn('warehouse_id', $warehouseIds);
-
-            if (Outlet::active()->count() <= 1) {
-                $builder->orWhereNull('warehouse_id');
-            }
-        });
+        $query->whereIn('warehouse_id', $warehouseIds);
 
         if ($salesReturnTablesReady) {
             $query->with('details.salesReturnItems.salesReturn:id,status');

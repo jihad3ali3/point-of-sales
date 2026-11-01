@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Outlet;
 use App\Models\StockMutation;
 use App\Services\OutletAccessService;
 use Illuminate\Http\Request;
@@ -40,9 +39,6 @@ class StockMutationController extends Controller
                     $query->whereRaw('1 = 0');
                 } else {
                     $query->whereIn('warehouse_id', $warehouseIds);
-                    if (Outlet::active()->count() <= 1) {
-                        $query->orWhereNull('warehouse_id');
-                    }
                 }
             })
             ->latest()

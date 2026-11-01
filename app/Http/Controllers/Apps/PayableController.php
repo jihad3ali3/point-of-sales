@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
 use App\Models\BankAccount;
-use App\Models\Outlet;
 use App\Models\Payable;
 use App\Models\PayablePayment;
 use App\Models\Supplier;
@@ -225,8 +224,6 @@ class PayableController extends Controller
 
             if ($warehouseIds->isEmpty()) {
                 $builder->whereRaw('1 = 0');
-            } elseif (Outlet::active()->count() <= 1) {
-                $builder->orWhereDoesntHave('purchaseOrder');
             }
         });
     }

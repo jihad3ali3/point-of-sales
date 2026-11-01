@@ -53,7 +53,7 @@ class DashboardChecklistTest extends TestCase
         Setting::set('app_setup_completed', '1');
         Category::create(['name' => 'Kat', 'image' => '', 'description' => '']);
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Utama',
             'type' => 'main',

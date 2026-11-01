@@ -27,7 +27,7 @@ class DiscountApprovalStateTest extends TestCase
         $this->admin->markEmailAsVerified();
         $this->actingAs($this->admin);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

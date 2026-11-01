@@ -30,10 +30,11 @@ class DineMenuController extends Controller
             ->get();
 
         $products = Product::where('is_active', true)
-            ->where(function ($query) use ($outlet) {
-                $query->where('stock', '>', 0);
+            ->whereHas('warehouses', function ($warehouse) use ($outlet) {
+                $warehouse->where('product_warehouse.stock', '>', 0);
+
                 if ($outlet) {
-                    $query->orWhereHas('warehouses', fn ($warehouse) => $warehouse->where('outlet_id', $outlet->id)->where('stock', '>', 0));
+                    $warehouse->where('outlet_id', $outlet->id);
                 }
             })
             ->with(['category', 'units.unit'])

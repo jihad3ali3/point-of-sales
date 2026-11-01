@@ -34,7 +34,7 @@ class ActiveOutletTest extends TestCase
         [$first, $second] = $this->outlets();
         $user = User::factory()->create();
         $user->outlets()->attach([$first->id => ['is_default' => true], $second->id => ['is_default' => false]]);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'outlet_id' => $first->id,
             'code' => 'WH-A',
             'name' => 'Warehouse A',

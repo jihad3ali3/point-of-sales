@@ -187,7 +187,7 @@ class SetupWizardTest extends TestCase
 
     public function test_index_returns_primary_warehouse_when_seeded(): void
     {
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -214,7 +214,7 @@ class SetupWizardTest extends TestCase
 
     public function test_store_updates_existing_warehouse_when_warehouse_id_provided(): void
     {
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -238,14 +238,14 @@ class SetupWizardTest extends TestCase
 
     public function test_store_rejects_non_pusat_warehouse_when_updating(): void
     {
-        $warehouse1 = Warehouse::create([
+        $warehouse1 = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Satu',
             'type' => 'main',
             'is_active' => true,
             'sort_order' => 0,
         ]);
-        $warehouse2 = Warehouse::create([
+        $warehouse2 = Warehouse::factory()->create([
             'code' => 'CABANG',
             'name' => 'Cabang',
             'type' => 'branch',
@@ -263,7 +263,7 @@ class SetupWizardTest extends TestCase
 
     public function test_store_allows_renaming_same_warehouse_code(): void
     {
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Lama',
             'type' => 'main',

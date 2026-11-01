@@ -18,7 +18,7 @@ class DocumentOutletAuthorizationTest extends TestCase
     {
         $outletA = Outlet::create(['code' => 'DOA', 'name' => 'Document A']);
         $outletB = Outlet::create(['code' => 'DOB', 'name' => 'Document B']);
-        $warehouseB = Warehouse::create([
+        $warehouseB = Warehouse::factory()->create([
             'code' => 'WH-DOB',
             'name' => 'Warehouse B',
             'type' => 'branch',

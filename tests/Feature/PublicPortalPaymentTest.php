@@ -21,7 +21,7 @@ class PublicPortalPaymentTest extends TestCase
     {
         $outletA = Outlet::create(['code' => 'PPA', 'name' => 'Portal A']);
         $outletB = Outlet::create(['code' => 'PPB', 'name' => 'Portal B']);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'WH-PPA',
             'name' => 'Warehouse A',
             'type' => 'branch',

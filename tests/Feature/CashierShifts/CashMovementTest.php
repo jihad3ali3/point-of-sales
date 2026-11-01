@@ -34,7 +34,7 @@ class CashMovementTest extends TestCase
         $this->cashier->givePermissionTo(['cashier-shifts-access', 'cashier-shifts-open', 'cashier-shifts-close']);
         $this->cashier->markEmailAsVerified();
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Utama',
             'type' => 'main',

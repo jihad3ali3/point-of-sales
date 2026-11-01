@@ -44,7 +44,7 @@ class CheckoutServiceTest extends TestCase
             'description' => 'Kategori untuk test',
         ]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

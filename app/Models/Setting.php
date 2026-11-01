@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -18,16 +17,11 @@ class Setting extends Model
     ];
 
     /**
-     * Get a setting value by key
+     * Get the global (outlet-agnostic) value of a setting.
      */
     public static function get(string $key, $default = null)
     {
-        $query = static::where('key', $key);
-        if (Schema::hasColumn('settings', 'outlet_id')) {
-            $query->whereNull('outlet_id');
-        }
-
-        $setting = $query->first();
+        $setting = static::where('key', $key)->whereNull('outlet_id')->first();
 
         return $setting ? $setting->value : $default;
     }
@@ -42,13 +36,12 @@ class Setting extends Model
         return filter_var(static::get($key, $default ? '1' : '0'), FILTER_VALIDATE_BOOL);
     }
 
+    /**
+     * Outlet value when present, otherwise the global value.
+     */
     public static function getForOutlet(string $key, ?Outlet $outlet, $default = null)
     {
         if ($outlet) {
-            if (! Schema::hasColumn('settings', 'outlet_id')) {
-                return static::get($key, $default);
-            }
-
             $value = static::where('key', $key)->where('outlet_id', $outlet->id)->value('value');
             if ($value !== null) {
                 return $value;
@@ -69,10 +62,6 @@ class Setting extends Model
             return static::set($key, $value, $description);
         }
 
-        if (! Schema::hasColumn('settings', 'outlet_id')) {
-            return static::set($key, $value, $description);
-        }
-
         return static::updateOrCreate(
             ['key' => $key, 'outlet_id' => $outlet->id],
             ['value' => $value, 'description' => $description]
@@ -84,13 +73,8 @@ class Setting extends Model
      */
     public static function set(string $key, $value, ?string $description = null)
     {
-        $attributes = ['key' => $key];
-        if (Schema::hasColumn('settings', 'outlet_id')) {
-            $attributes['outlet_id'] = null;
-        }
-
         return static::updateOrCreate(
-            $attributes,
+            ['key' => $key, 'outlet_id' => null],
             ['value' => $value, 'description' => $description]
         );
     }

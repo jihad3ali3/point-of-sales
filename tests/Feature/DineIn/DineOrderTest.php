@@ -35,7 +35,7 @@ class DineOrderTest extends TestCase
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
         $this->cashier->markEmailAsVerified();
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -301,14 +301,14 @@ class DineOrderTest extends TestCase
     {
         $outletA = Outlet::create(['code' => 'OUT-A', 'name' => 'Outlet A', 'is_active' => true, 'is_sales_enabled' => true]);
         $outletB = Outlet::create(['code' => 'OUT-B', 'name' => 'Outlet B', 'is_active' => true, 'is_sales_enabled' => true]);
-        $shiftWarehouse = Warehouse::create([
+        $shiftWarehouse = Warehouse::factory()->create([
             'outlet_id' => $outletA->id,
             'code' => 'WH-A',
             'name' => 'Gudang A',
             'type' => 'branch',
             'is_active' => true,
         ]);
-        $orderWarehouse = Warehouse::create([
+        $orderWarehouse = Warehouse::factory()->create([
             'outlet_id' => $outletB->id,
             'code' => 'WH-B',
             'name' => 'Gudang B',

@@ -148,7 +148,7 @@ class MasterDataApiTest extends TestCase
 
     public function test_warehouses_duplicate_code_rejected(): void
     {
-        Warehouse::create(['code' => 'WH-A', 'name' => 'Gudang A']);
+        Warehouse::factory()->create(['code' => 'WH-A', 'name' => 'Gudang A']);
 
         $this->postJson('/api/v1/warehouses', ['code' => 'WH-A', 'name' => 'Gudang B'])
             ->assertStatus(422)

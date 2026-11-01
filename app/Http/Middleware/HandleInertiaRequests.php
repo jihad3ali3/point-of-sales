@@ -52,21 +52,10 @@ class HandleInertiaRequests extends Middleware
             $outletAccess = app(OutletAccessService::class);
             $warehouseIds = $outletAccess->warehousesFor($request->user())->pluck('id');
             $outletIds = $outletAccess->accessibleOutlets($request->user())->pluck('id');
-            $includeLegacy = Outlet::active()->count() <= 1;
-
             if ($request->user()->can('discounts-approve')) {
                 $pendingApprovalCount = Transaction::query()
                     ->where('discount_approval_status', 'pending')
-                    ->where(function ($query) use ($warehouseIds, $includeLegacy) {
-                        if ($warehouseIds->isEmpty()) {
-                            $query->whereRaw('1 = 0');
-                        } else {
-                            $query->whereIn('warehouse_id', $warehouseIds);
-                            if ($includeLegacy) {
-                                $query->orWhereNull('warehouse_id');
-                            }
-                        }
-                    })
+                    ->whereIn('warehouse_id', $warehouseIds)
                     ->count();
             }
 
@@ -93,15 +82,7 @@ class HandleInertiaRequests extends Middleware
                     fn ($join) => $join->on('warehouse_totals.product_id', '=', 'products.id')
                 )
                 ->where('min_stock', '>', 0)
-                ->where(function ($query) use ($includeLegacy) {
-                    $query->whereColumn('warehouse_totals.warehouse_stock', '<=', 'min_stock');
-                    if ($includeLegacy) {
-                        $query->orWhere(function ($legacy) {
-                            $legacy->whereNull('warehouse_totals.warehouse_stock')
-                                ->whereColumn('stock', '<=', 'min_stock');
-                        });
-                    }
-                })
+                ->whereColumn('warehouse_totals.warehouse_stock', '<=', 'min_stock')
                 ->whereNotExists(function ($query) use ($userId) {
                     $query->selectRaw('1')
                         ->from('product_notification_reads as pr')
@@ -111,7 +92,7 @@ class HandleInertiaRequests extends Middleware
                 })
                 ->orderByDesc('updated_at')
                 ->limit(10)
-                ->get(['products.id', 'title', DB::raw('COALESCE(warehouse_totals.warehouse_stock, products.stock) as warehouse_stock'), 'updated_at'])
+                ->get(['products.id', 'title', DB::raw('warehouse_totals.warehouse_stock as warehouse_stock'), 'updated_at'])
                 ->map(function ($product) {
                     return [
                         'id' => $product->id,

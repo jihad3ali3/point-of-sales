@@ -24,7 +24,7 @@ class DineOrderStatusTest extends TestCase
 
         $this->seed([PermissionSeeder::class, RoleSeeder::class, UserSeeder::class]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

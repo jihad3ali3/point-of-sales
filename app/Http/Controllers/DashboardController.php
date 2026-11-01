@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CashierShift;
 use App\Models\Category;
 use App\Models\Customer;
-use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\Profit;
 use App\Models\Setting;
@@ -28,13 +27,7 @@ class DashboardController extends Controller
                 ->where('outlet_id', $activeOutlet->id)
                 ->pluck('id');
         }
-        $includeLegacy = Outlet::active()->count() <= 1;
-        $scope = fn ($query, $column = 'warehouse_id') => $query->where(function ($q) use ($warehouseIds, $includeLegacy, $column) {
-            $q->whereIn($column, $warehouseIds);
-            if ($includeLegacy) {
-                $q->orWhereNull($column);
-            }
-        });
+        $scope = fn ($query, $column = 'warehouse_id') => $query->whereIn($column, $warehouseIds);
         $scopeTransactions = fn ($query) => $scope($query);
         $scopeProfits = fn ($query) => $query->whereHas('transaction', fn ($q) => $scope($q));
         $scopeDetails = fn ($query) => $query->whereHas('transaction', fn ($q) => $scope($q));
@@ -102,17 +95,10 @@ class DashboardController extends Controller
                 'warehouse_totals',
                 fn ($join) => $join->on('warehouse_totals.product_id', '=', 'products.id')
             )
-            ->where(function ($q) use ($includeLegacy) {
-                $q->where('warehouse_totals.warehouse_stock', '<', 10);
-                if ($includeLegacy) {
-                    $q->orWhere(function ($legacy) {
-                        $legacy->whereNull('warehouse_totals.warehouse_stock')->where('products.stock', '<', 10);
-                    });
-                }
-            })
+            ->where('warehouse_totals.warehouse_stock', '<', 10)
             ->orderBy('warehouse_totals.warehouse_stock')
             ->take(5)
-            ->get(['products.*', DB::raw('COALESCE(warehouse_totals.warehouse_stock, products.stock) as warehouse_stock')])
+            ->get(['products.*', DB::raw('warehouse_totals.warehouse_stock as warehouse_stock')])
             ->map(function ($product) {
                 return [
                     'name' => $product->title,

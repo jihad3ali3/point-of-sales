@@ -41,7 +41,7 @@ class ExpirePendingTransactionsTest extends TestCase
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
         $this->cashier->markEmailAsVerified();
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'name' => 'PUSAT',
             'code' => 'PUSAT',
             'type' => 'main',

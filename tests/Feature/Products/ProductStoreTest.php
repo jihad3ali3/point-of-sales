@@ -36,7 +36,7 @@ class ProductStoreTest extends TestCase
             'description' => 'Kategori untuk test',
         ]);
 
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -94,7 +94,7 @@ class ProductStoreTest extends TestCase
 
     public function test_store_uses_requested_warehouse(): void
     {
-        $other = Warehouse::create([
+        $other = Warehouse::factory()->create([
             'code' => 'WH-2',
             'name' => 'Gudang Kedua',
             'type' => 'branch',

@@ -44,7 +44,7 @@ class SplitPaymentApiTest extends TestCase
     private function prepareCheckout(): array
     {
         $cashier = User::factory()->create();
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'SPLIT-API',
             'name' => 'Gudang API',
             'type' => 'main',

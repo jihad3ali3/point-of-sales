@@ -116,10 +116,7 @@ class StockTransferService
                 }
 
                 $stockAfter = $available - $item->qty;
-                if ($pw) {
-                    $pw->decrement('stock', $item->qty);
-                }
-                $item->product->decrement('stock', $item->qty);
+                $pw->decrement('stock', $item->qty);
 
                 $this->stockMutationService->recordMutation(
                     product: $item->product,
@@ -167,18 +164,16 @@ class StockTransferService
             $transfer->load('items.product');
             $before = $transfer->replicate();
 
-            // Increment destination warehouse stock + legacy stock
             foreach ($transfer->items as $item) {
                 $product = $item->product;
-                $stockBefore = (int) $product->stock;
 
                 // ponytail: firstOrCreate (NOT updateOrCreate with stock=0, which would reset an existing row)
-                ProductWarehouse::firstOrCreate(
+                $pivot = ProductWarehouse::firstOrCreate(
                     ['product_id' => $item->product_id, 'warehouse_id' => $transfer->destination_warehouse_id],
                     ['stock' => 0]
-                )->increment('stock', $item->qty);
-
-                $product->increment('stock', $item->qty);
+                );
+                $stockBefore = (int) $pivot->stock;
+                $pivot->increment('stock', $item->qty);
 
                 $this->stockMutationService->recordMutation(
                     product: $product,
@@ -188,7 +183,7 @@ class StockTransferService
                     mutationType: 'in',
                     qty: $item->qty,
                     stockBefore: $stockBefore,
-                    stockAfter: (int) $product->stock,
+                    stockAfter: $stockBefore + $item->qty,
                     notes: 'Transfer dari '.$transfer->sourceWarehouse->code,
                     userId: $userId,
                 );
@@ -239,8 +234,6 @@ class StockTransferService
                         ['product_id' => $item->product_id, 'warehouse_id' => $transfer->source_warehouse_id],
                         ['stock' => 0]
                     )->increment('stock', $item->qty);
-
-                    $product->increment('stock', $item->qty);
                 }
             }
 

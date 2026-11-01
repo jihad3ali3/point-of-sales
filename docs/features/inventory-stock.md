@@ -56,9 +56,9 @@ Menjaga akurasi stok melalui master produk, stock opname, dan histori mutasi sto
 
 ## Batasan Saat Ini
 
-- `products.stock` tetap dipelihara sebagai aggregate compatibility; stok operasional per gudang berada di `product_warehouse`
-- data historis tertentu dapat memiliki `warehouse_id` nullable
-- tidak semua sumber mutasi lama direpresentasikan dengan struktur pivot yang sama
+- `product_warehouse` adalah satu-satunya catatan stok; tidak ada lagi kolom agregat `products.stock`
+- `Product::stock` adalah accessor baca-saja yang menjumlahkan seluruh pivot gudang
+- setiap mutasi stok wajib menyertakan gudang asal/tujuan
 
 ## File Sentral
 

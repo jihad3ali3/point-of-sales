@@ -237,21 +237,15 @@ class SalesReturnController extends Controller
                     $product = $item->product()->lockForUpdate()->first();
 
                     if ($product) {
-                        $stockBefore = (int) $product->stock;
+                        // Restock only the warehouse the sale came from.
+                        $pivot = ProductWarehouse::firstOrCreate([
+                            'product_id' => $product->id,
+                            'warehouse_id' => $salesReturn->transaction->warehouse_id,
+                        ], ['stock' => 0]);
+
+                        $stockBefore = (int) $pivot->stock;
+                        $pivot->increment('stock', $baseQty);
                         $stockAfter = $stockBefore + $baseQty;
-
-                        $product->update([
-                            'stock' => $stockAfter,
-                        ]);
-
-                        // Restock to transaction warehouse
-                        $transactionWarehouseId = $salesReturn->transaction->warehouse_id;
-                        if ($transactionWarehouseId) {
-                            ProductWarehouse::where([
-                                'product_id' => $product->id,
-                                'warehouse_id' => $transactionWarehouseId,
-                            ])->increment('stock', $baseQty);
-                        }
 
                         $this->stockMutationService->recordSalesReturnRestock(
                             product: $product,

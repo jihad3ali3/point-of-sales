@@ -32,7 +32,7 @@ class PosApiTest extends TestCase
         parent::setUp();
 
         $this->cashier = User::factory()->create();
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'WH-1',
             'name' => 'Gudang Utama',
             'status' => 'active',

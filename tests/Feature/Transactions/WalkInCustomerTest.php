@@ -151,7 +151,7 @@ class WalkInCustomerTest extends TestCase
             'tax_rate' => 0,
         ]);
 
-        $warehouse = Warehouse::where('type', 'main')->first() ?? Warehouse::create([
+        $warehouse = Warehouse::where('type', 'main')->first() ?? Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Utama',
             'type' => 'main',

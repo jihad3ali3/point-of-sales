@@ -12,6 +12,7 @@ Dokumentasi ini ditujukan untuk developer yang ingin setup, memahami alur modul,
 ### Arsitektur
 - `docs/architecture-overview.md` — stack, middleware, service layer
 - `docs/feature-index.md` — indeks semua modul
+- `docs/compatibility-ar.md` — (عربي) roadmap penghapusan logika legacy + status rebuild
 
 ### POS & Transaksi
 - `docs/features/pos-transactions.md` — cart, hold/resume, checkout multi-payment

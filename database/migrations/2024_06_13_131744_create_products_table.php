@@ -22,7 +22,6 @@ return new class extends Migration
             $table->text('description');
             $table->bigInteger('buy_price');
             $table->bigInteger('sell_price');
-            $table->integer('stock');
             $table->timestamps();
 
             // relationship categories

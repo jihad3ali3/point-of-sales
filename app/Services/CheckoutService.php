@@ -218,23 +218,18 @@ class CheckoutService
                 $product->load('components');
                 foreach ($product->components as $component) {
                     $componentQty = (int) round((float) $component->pivot->qty * $cart->qty);
-                    $pw = $warehouseId
-                        ? ProductWarehouse::where([
-                            'product_id' => $component->id,
-                            'warehouse_id' => $warehouseId,
-                        ])->lockForUpdate()->first()
-                        : null;
-                    $available = $pw ? (int) $pw->stock : (int) $component->stock;
+                    $pw = ProductWarehouse::where([
+                        'product_id' => $component->id,
+                        'warehouse_id' => $warehouseId,
+                    ])->lockForUpdate()->first();
+                    $available = (int) ($pw?->stock ?? 0);
                     if ($available < $componentQty) {
                         throw ValidationException::withMessages([
                             'stock' => "Stok komponen {$component->title} tidak mencukupi. Tersedia: {$available}.",
                         ]);
                     }
                     $stockBefore = $available;
-                    if ($pw) {
-                        $pw->decrement('stock', $componentQty);
-                    }
-                    $component->decrement('stock', $componentQty);
+                    $pw->decrement('stock', $componentQty);
 
                     $this->stockMutationService->recordMutation(
                         product: $component,
@@ -252,23 +247,18 @@ class CheckoutService
             } else {
                 $baseQty = (int) round($cart->qty * (float) ($cart->conversion_factor ?? 1));
 
-                $pw = $warehouseId
-                    ? ProductWarehouse::where([
-                        'product_id' => $product->id,
-                        'warehouse_id' => $warehouseId,
-                    ])->lockForUpdate()->first()
-                    : null;
-                $available = $pw ? (int) $pw->stock : (int) $product->stock;
+                $pw = ProductWarehouse::where([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $warehouseId,
+                ])->lockForUpdate()->first();
+                $available = (int) ($pw?->stock ?? 0);
                 if ($available < $baseQty) {
                     throw ValidationException::withMessages([
                         'stock' => "Stok {$product->title} tidak mencukupi. Tersedia: {$available}.",
                     ]);
                 }
                 $stockBefore = $available;
-                if ($pw) {
-                    $pw->decrement('stock', $baseQty);
-                }
-                $product->decrement('stock', $baseQty);
+                $pw->decrement('stock', $baseQty);
 
                 $this->stockMutationService->recordMutation(
                     product: $product,

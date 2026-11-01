@@ -13,14 +13,14 @@ use Illuminate\Support\Facades\Schema;
 
 class OutletAccessService
 {
+    /**
+     * A warehouse is usable only when it is active, belongs to an active outlet,
+     * and that outlet is assigned to the user. There is no single-outlet bypass:
+     * every user must be assigned through `user_outlets`.
+     */
     public function canUseWarehouse(User $user, ?Warehouse $warehouse): bool
     {
-        if (! $warehouse) {
-            // Legacy installs allowed shifts without a warehouse assignment.
-            return $this->legacySingleOutletBypass();
-        }
-
-        if (! $warehouse->is_active) {
+        if (! $warehouse || ! $warehouse->is_active || ! $warehouse->outlet_id) {
             return false;
         }
 
@@ -28,43 +28,70 @@ class OutletAccessService
             return true;
         }
 
-        $outletIds = $user->outlets()->pluck('outlets.id');
+        $outlet = $warehouse->relationLoaded('outlet')
+            ? $warehouse->outlet
+            : Outlet::find($warehouse->outlet_id);
 
-        // Backward compatibility: old single-outlet installs have no assignments yet.
-        if ($outletIds->isEmpty()) {
-            return $this->legacySingleOutletBypass();
+        if (! $outlet || ! $outlet->is_active) {
+            return false;
         }
 
-        return (bool) ($warehouse->outlet_id && $outletIds->contains($warehouse->outlet_id));
+        return $user->outlets()
+            ->where('outlets.is_active', true)
+            ->where('outlets.id', $warehouse->outlet_id)
+            ->exists();
     }
 
+    /**
+     * Selling requires a usable warehouse whose outlet is sales-enabled.
+     * `PUSAT` (or any non-sales outlet) can never host a sale or a shift.
+     */
     public function canSellAtWarehouse(User $user, ?Warehouse $warehouse): bool
     {
-        return $this->canUseWarehouse($user, $warehouse)
-            && (! $warehouse?->outlet_id && $this->legacySingleOutletBypass()
-                || (bool) ($warehouse?->outlet ?? Outlet::find($warehouse?->outlet_id))?->is_sales_enabled);
+        if (! $this->canUseWarehouse($user, $warehouse)) {
+            return false;
+        }
+
+        $outlet = $warehouse->relationLoaded('outlet')
+            ? $warehouse->outlet
+            : Outlet::find($warehouse->outlet_id);
+
+        return (bool) $outlet?->is_sales_enabled;
     }
 
     public function salesWarehousesFor(User $user): Collection
     {
         return $this->warehousesFor($user)
-            ->filter(fn (Warehouse $warehouse) => ! $warehouse->outlet_id
-                ? $this->legacySingleOutletBypass()
-                : (bool) $warehouse->outlet?->is_sales_enabled)
+            ->filter(fn (Warehouse $warehouse) => (bool) $warehouse->outlet?->is_sales_enabled)
             ->values();
     }
 
     public function warehousesFor(User $user): Collection
     {
-        $query = Warehouse::query()->active()->orderBy('sort_order')->orderBy('code');
+        $query = Warehouse::query()
+            ->active()
+            ->whereNotNull('outlet_id')
+            ->orderBy('sort_order')
+            ->orderBy('code');
+
         if (! $user->isSuperAdmin()) {
-            $outletIds = $user->outlets()->pluck('outlets.id');
-            if ($outletIds->isNotEmpty()) {
-                $query->whereIn('outlet_id', $outletIds);
+            $outletIds = $this->accessibleOutlets($user)->pluck('id');
+
+            if ($outletIds->isEmpty()) {
+                return new Collection;
             }
+
+            $query->whereIn('outlet_id', $outletIds);
         }
 
-        return $query->with('outlet:id,is_sales_enabled')->get(['id', 'code', 'name', 'outlet_id', 'is_active']);
+        return $query->with('outlet:id,code,is_sales_enabled,is_active')->get([
+            'id',
+            'code',
+            'name',
+            'outlet_id',
+            'is_active',
+            'type',
+        ]);
     }
 
     public function defaultOutlet(User $user): ?Outlet
@@ -112,9 +139,14 @@ class OutletAccessService
         }
 
         $outlets = $this->accessibleOutlets($user);
+
+        if ($outlets->isEmpty()) {
+            return null;
+        }
+
         $selectedId = (int) $request->session()->get('active_outlet_id');
 
-        return $outlets->firstWhere('id', $selectedId) ?? $outlets->first() ?? $this->defaultOutlet($user);
+        return $outlets->firstWhere('id', $selectedId) ?? $outlets->first();
     }
 
     public function hasActiveShiftInOtherOutlet(User $user, Outlet $outlet): bool
@@ -141,16 +173,13 @@ class OutletAccessService
             'stock_opnames',
             'product_batches',
         ] as $table) {
-            if (Schema::hasTable($table)
-                && Schema::hasColumn($table, 'warehouse_id')
-                && DB::table($table)->where('warehouse_id', $warehouseId)->exists()) {
+            if (DB::table($table)->where('warehouse_id', $warehouseId)->exists()) {
                 return true;
             }
         }
 
-        return Schema::hasTable('stock_transfers')
-            && (DB::table('stock_transfers')->where('source_warehouse_id', $warehouseId)->exists()
-                || DB::table('stock_transfers')->where('destination_warehouse_id', $warehouseId)->exists());
+        return DB::table('stock_transfers')->where('source_warehouse_id', $warehouseId)->exists()
+            || DB::table('stock_transfers')->where('destination_warehouse_id', $warehouseId)->exists();
     }
 
     public function hasOpenShift(Warehouse $warehouse): bool
@@ -160,11 +189,5 @@ class OutletAccessService
                 ->where('warehouse_id', $warehouse->id)
                 ->where('status', 'open')
                 ->exists();
-    }
-
-    private function legacySingleOutletBypass(): bool
-    {
-        return config('security.outlet.legacy_single_outlet_bypass', true)
-            && Outlet::active()->count() <= 1;
     }
 }

@@ -91,6 +91,6 @@ Memisahkan stok produk per lokasi fisik (gudang pusat, cabang toko, gudang penya
 
 ## Catatan Teknis
 
-- Semua tabel stok & transaksi punya `warehouse_id` nullable (backward compat)
-- Jika `warehouse_id` null, fallback ke `products.stock` (legacy single-warehouse)
-- Seed data: warehouse PUSAT (main) dibuat otomatis, stok existing dipindah ke pivot
+- Semua tabel stok & transaksi menyimpan `warehouse_id` yang wajib terisi
+- Stok hanya dibaca dari pivot `product_warehouse`; tidak ada fallback ke kolom agregat
+- Seed data: warehouse PUSAT (main) dibuat otomatis dan terhubung ke outlet `PUSAT`

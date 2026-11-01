@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Models\Outlet;
 use App\Models\Receivable;
 use Illuminate\Support\Collection;
 
@@ -120,14 +119,8 @@ class ReceivableService
 
             if ($warehouseIds->isEmpty()) {
                 $builder->whereRaw('1 = 0');
-            } elseif ($this->singleOutlet()) {
-                $builder->orWhereDoesntHave('transaction');
             }
         });
     }
 
-    private function singleOutlet(): bool
-    {
-        return Outlet::active()->count() <= 1;
-    }
 }

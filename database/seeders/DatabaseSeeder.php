@@ -54,15 +54,34 @@ class DatabaseSeeder extends Seeder
             $pusat->update(['outlet_id' => $outlet->id]);
         }
 
+        // Every account must belong to an outlet; the central outlet is the
+        // default for users created before any branch exists.
+        DB::table('users')
+            ->whereNotExists(fn ($query) => $query->selectRaw('1')
+                ->from('user_outlets')
+                ->whereColumn('user_outlets.user_id', 'users.id'))
+            ->pluck('id')
+            ->each(fn ($userId) => DB::table('user_outlets')->insertOrIgnore([
+                'user_id' => $userId,
+                'outlet_id' => $outlet->id,
+                'is_default' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+
         if (! Setting::get('setup_warehouse_id')) {
             Setting::set('setup_warehouse_id', $pusat->id);
         }
 
-        $products = DB::table('products')->select('id', 'stock')->get()
-            ->map(fn ($product) => [
-                'product_id' => $product->id,
+        $products = DB::table('products')
+            ->whereNotExists(fn ($query) => $query->selectRaw('1')
+                ->from('product_warehouse')
+                ->whereColumn('product_warehouse.product_id', 'products.id'))
+            ->pluck('id')
+            ->map(fn ($productId) => [
+                'product_id' => $productId,
                 'warehouse_id' => $pusat->id,
-                'stock' => $product->stock,
+                'stock' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ])

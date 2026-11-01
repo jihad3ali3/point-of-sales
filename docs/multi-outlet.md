@@ -10,7 +10,7 @@ The POS supports multiple branches (outlets) from a single shared database. Each
 - Sales outlets (branches) each have a `branch`-type warehouse and can open cashier shifts.
 - Cashier assignments are stored in `user_outlets` (one default per user).
 - Active outlet context is session-based; the active shift warehouse/outlet is the source of truth and locks outlet switching while a shift is open.
-- Global fallback remains for legacy single-outlet installations.
+- There is no implicit single-outlet fallback: every user must be assigned to an outlet.
 
 ## Scope Policy
 
@@ -18,7 +18,7 @@ The POS supports multiple branches (outlets) from a single shared database. Each
 - Transactions, stock, shifts, purchasing, returns, reports, settings, pricing, and dine-in data use outlet context.
 - `PUSAT` is the central warehouse and is not sales-enabled.
 - A cashier uses one active shift and one outlet warehouse at a time.
-- Global configuration remains a fallback for legacy single-outlet installations.
+- Global (outlet-less) configuration rows act as shared defaults; an outlet-scoped row overrides them.
 
 ## Day-to-Day Operations
 
@@ -39,11 +39,8 @@ After the first install the active outlet is set in the navbar selector (`Outlet
 
 1. Back up the database and restore that backup into staging.
 2. Run `php artisan migrate --pretend`, then `php artisan migrate` on staging.
-3. Run `php artisan outlet:audit` and `php artisan outlet:legacy-audit`.
-4. Run `php artisan inventory:reconcile` and save the output.
-5. Do not run `inventory:reconcile --fix` until the team confirms that warehouse pivot stock is authoritative.
-6. Classify every warehouse-less transaction, shift, stock mutation, purchase, receiving, return, and opname.
-7. Assign every active user to the correct outlet and verify one default outlet.
+3. Run `php artisan outlet:audit` and review the invariants it reports.
+4. Assign every active user to the correct outlet and verify one default outlet.
 
 ## Outlet Setup
 
@@ -85,8 +82,7 @@ Run the following with a test user assigned to one outlet:
 Do not enable the second sales outlet until all of the following are true:
 
 - `php artisan outlet:audit --strict` exits successfully.
-- `php artisan outlet:legacy-audit` output has been reviewed and mapped where appropriate.
-- Stock reconciliation output is clean or formally accepted.
+- `php artisan outlet:audit --strict` passes on staging.
 - Staging pilot passes and the rollback plan is documented.
 - Backups and queue/scheduler/WhatsApp monitoring are confirmed.
 

@@ -65,8 +65,7 @@ secara global (lihat `docs/configuration.md`), jadi login langsung masuk ke dash
 
 - **PUSAT** — gudang pusat, `is_sales_enabled = false`; tidak ada transaksi penjualan.
 - **MAL / TKB / PUT** — outlet penjualan dengan gudang cabang masing-masing.
-- Stok cabang terisi (default 25 unit per produk), lalu `products.stock` disinkronkan sebagai
-  agregat global.
+- Stok cabang terisi (default 25 unit per produk) langsung di pivot `product_warehouse`.
 - Skenario multi-outlet/multi-gudang lebih lengkap ada di `docs/getting-started.md` bagian
   **Skenario Multi-Cabang**.
 

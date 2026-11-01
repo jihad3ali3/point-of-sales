@@ -31,7 +31,7 @@ class CheckoutStockIntegrityTest extends TestCase
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
         $this->cashier->markEmailAsVerified();
 
-        $this->pusat = Warehouse::create([
+        $this->pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',

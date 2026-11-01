@@ -45,7 +45,7 @@ class StockInvariantTest extends TestCase
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
         $this->cashier->markEmailAsVerified();
 
-        $this->pusat = Warehouse::create([
+        $this->pusat = Warehouse::factory()->create([
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
             'type' => 'main',
@@ -53,7 +53,7 @@ class StockInvariantTest extends TestCase
             'sort_order' => 0,
         ]);
 
-        $this->branch = Warehouse::create([
+        $this->branch = Warehouse::factory()->create([
             'code' => 'CABANG',
             'name' => 'Gudang Cabang',
             'type' => 'branch',
@@ -233,24 +233,6 @@ class StockInvariantTest extends TestCase
 
         $this->assertSame(11, $product->fresh()->stock);
         $this->assertGlobalMatchesPivotSum('sales return');
-    }
-
-    public function test_reconcile_command_confirms_consistency_after_operations(): void
-    {
-        $product = $this->createProduct(50);
-
-        $this->actingAs($this->cashier)->post(route('transactions.addToCart'), [
-            'product_id' => $product->id,
-            'qty' => 5,
-        ])->assertRedirect();
-
-        $this->actingAs($this->cashier)
-            ->post(route('transactions.store'), ['payment_method' => 'cash', 'cash' => 50000])
-            ->assertRedirect();
-
-        $this->artisan('inventory:reconcile')
-            ->expectsOutputToContain('Inventory is consistent')
-            ->assertSuccessful();
     }
 
     public function test_audit_multiuint_command_is_read_only_when_consistent(): void

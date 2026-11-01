@@ -50,7 +50,7 @@ class OutletWizardTest extends TestCase
         $user->assignRole(Role::findByName('super-admin'));
         $user->markEmailAsVerified();
         $outlet = Outlet::create(['code' => 'PUSAT', 'name' => 'Pusat', 'is_sales_enabled' => false]);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'outlet_id' => $outlet->id,
             'code' => 'PUSAT',
             'name' => 'Gudang Pusat',
@@ -76,7 +76,7 @@ class OutletWizardTest extends TestCase
         $allowed = Outlet::create(['code' => 'MAL', 'name' => 'Malabar']);
         $blocked = Outlet::create(['code' => 'PUT', 'name' => 'Puter']);
         $user->outlets()->attach($allowed->id, ['is_default' => true]);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'outlet_id' => $blocked->id,
             'code' => 'PUT',
             'name' => 'Gudang Puter',
@@ -103,7 +103,7 @@ class OutletWizardTest extends TestCase
         $user->assignRole(Role::findByName('super-admin'));
         $user->markEmailAsVerified();
         $outlet = Outlet::create(['code' => 'MAL', 'name' => 'Malabar', 'is_sales_enabled' => true]);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'outlet_id' => $outlet->id, 'code' => 'MAL', 'name' => 'Malabar',
             'type' => 'branch', 'is_active' => true, 'sort_order' => 0,
         ]);
@@ -124,9 +124,9 @@ class OutletWizardTest extends TestCase
         $user->assignRole(Role::findByName('super-admin'));
         $user->markEmailAsVerified();
         $pusat = Outlet::create(['code' => 'PUSAT', 'name' => 'Pusat', 'is_sales_enabled' => false]);
-        Warehouse::create(['outlet_id' => $pusat->id, 'code' => 'PUSAT', 'name' => 'Pusat', 'type' => 'main', 'is_active' => true]);
+        Warehouse::factory()->create(['outlet_id' => $pusat->id, 'code' => 'PUSAT', 'name' => 'Pusat', 'type' => 'main', 'is_active' => true]);
         $used = Outlet::create(['code' => 'MAL', 'name' => 'Malabar', 'is_sales_enabled' => true]);
-        $warehouse = Warehouse::create(['outlet_id' => $used->id, 'code' => 'MAL', 'name' => 'Malabar', 'type' => 'branch', 'is_active' => true]);
+        $warehouse = Warehouse::factory()->create(['outlet_id' => $used->id, 'code' => 'MAL', 'name' => 'Malabar', 'type' => 'branch', 'is_active' => true]);
         app(CashierShiftService::class)->openShift($user, $user, 0, null, $warehouse->id);
 
         $this->withSession($this->recentlyConfirmedSession())->actingAs($user)->delete(route('settings.outlets.destroy', $pusat))->assertSessionHas('error');

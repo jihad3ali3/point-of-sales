@@ -8,7 +8,6 @@ use App\Exports\TransactionsExport;
 use App\Http\Controllers\Controller;
 use App\Imports\CustomersImport;
 use App\Imports\ProductsImport;
-use App\Models\Outlet;
 use App\Services\OutletAccessService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -34,9 +33,7 @@ class ImportExportController extends Controller
         $warehouseIds = $request->user()->isSuperAdmin()
             ? null
             : $this->outletAccessService->warehousesFor($request->user())->pluck('id')->all();
-        $includeLegacy = Outlet::active()->count() <= 1;
-
-        return Excel::download(new TransactionsExport($request, $warehouseIds, $includeLegacy), 'transaksi.xlsx');
+        return Excel::download(new TransactionsExport($request, $warehouseIds), 'transaksi.xlsx');
     }
 
     public function importProducts(Request $request)
@@ -45,7 +42,8 @@ class ImportExportController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
         ]);
 
-        $import = new ProductsImport;
+        $warehouse = $this->outletAccessService->salesWarehousesFor($request->user())->first();
+        $import = new ProductsImport($warehouse?->id);
         Excel::import($import, $request->file('file'));
 
         $successCount = $import->getRowCount();

@@ -34,7 +34,7 @@ class PriceListCheckoutTest extends TestCase
 
         $this->seed([PermissionSeeder::class, RoleSeeder::class, UserSeeder::class]);
         $this->cashier = User::where('email', 'cashier@gmail.com')->first();
-        $this->warehouse = Warehouse::create([
+        $this->warehouse = Warehouse::factory()->create([
             'code' => 'WH-1',
             'name' => 'Gudang Utama',
             'status' => 'active',

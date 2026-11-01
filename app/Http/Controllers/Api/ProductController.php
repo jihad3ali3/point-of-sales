@@ -71,11 +71,12 @@ class ProductController extends Controller
             'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
         ]);
 
+        $openingStock = (int) ($validated['stock'] ?? 0);
+
         $product = Product::create([
-            ...$validated,
+            ...array_diff_key($validated, ['stock' => true, 'warehouse_id' => true]),
             'image' => $validated['image'] ?? '',
             'description' => $validated['description'] ?? '',
-            'stock' => $validated['stock'] ?? 0,
             'min_stock' => $validated['min_stock'] ?? 0,
             'max_stock' => $validated['max_stock'] ?? 0,
             'tax_type' => $validated['tax_type'] ?? 'exclusive',
@@ -89,16 +90,13 @@ class ProductController extends Controller
             $warehouse = Warehouse::findOrFail($warehouseId);
             abort_unless($this->outletAccessService->canUseWarehouse($request->user(), $warehouse), 403);
             $product->warehouses()->syncWithoutDetaching([
-                $warehouseId => ['stock' => $validated['stock'] ?? 0],
+                $warehouseId => ['stock' => $openingStock],
             ]);
         } else {
-            $default = Warehouse::active()->orderBy('code')->first();
-            if ($default && ! $this->outletAccessService->canUseWarehouse($request->user(), $default)) {
-                $default = $this->outletAccessService->warehousesFor($request->user())->first();
-            }
+            $default = $this->outletAccessService->warehousesFor($request->user())->first();
             if ($default) {
                 $product->warehouses()->syncWithoutDetaching([
-                    $default->id => ['stock' => $validated['stock'] ?? 0],
+                    $default->id => ['stock' => $openingStock],
                 ]);
             }
         }
@@ -142,7 +140,20 @@ class ProductController extends Controller
             'is_composite' => ['nullable', 'boolean'],
         ]);
 
+        $stock = array_key_exists('stock', $validated) ? (int) $validated['stock'] : null;
+        unset($validated['stock']);
+
         $product->update($validated);
+
+        if ($stock !== null) {
+            $warehouse = $this->outletAccessService->warehousesFor($request->user())->first();
+
+            if ($warehouse) {
+                $product->warehouses()->syncWithoutDetaching([
+                    $warehouse->id => ['stock' => $stock],
+                ]);
+            }
+        }
 
         return $this->ok(new ProductResource($product->load('category')), 'Produk berhasil diperbarui');
     }

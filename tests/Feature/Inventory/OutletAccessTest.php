@@ -21,7 +21,7 @@ class OutletAccessTest extends TestCase
     public function test_single_outlet_installation_keeps_unassigned_user_compatible(): void
     {
         $outlet = Outlet::create(['code' => 'PUSAT', 'name' => 'Pusat']);
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'PUSAT', 'name' => 'Gudang Pusat', 'type' => 'main',
             'is_active' => true, 'sort_order' => 0, 'outlet_id' => $outlet->id,
         ]);
@@ -33,11 +33,11 @@ class OutletAccessTest extends TestCase
     {
         $allowed = Outlet::create(['code' => 'MAL', 'name' => 'Malabar']);
         $blocked = Outlet::create(['code' => 'PUT', 'name' => 'Puter']);
-        $allowedWarehouse = Warehouse::create([
+        $allowedWarehouse = Warehouse::factory()->create([
             'code' => 'MAL', 'name' => 'Malabar', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 0, 'outlet_id' => $allowed->id,
         ]);
-        $blockedWarehouse = Warehouse::create([
+        $blockedWarehouse = Warehouse::factory()->create([
             'code' => 'PUT', 'name' => 'Puter', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 1, 'outlet_id' => $blocked->id,
         ]);
@@ -54,11 +54,11 @@ class OutletAccessTest extends TestCase
     {
         $allowed = Outlet::create(['code' => 'MAL', 'name' => 'Malabar']);
         $blocked = Outlet::create(['code' => 'PUT', 'name' => 'Puter']);
-        $allowedWarehouse = Warehouse::create([
+        $allowedWarehouse = Warehouse::factory()->create([
             'code' => 'MAL', 'name' => 'Malabar', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 0, 'outlet_id' => $allowed->id,
         ]);
-        $blockedWarehouse = Warehouse::create([
+        $blockedWarehouse = Warehouse::factory()->create([
             'code' => 'PUT', 'name' => 'Puter', 'type' => 'branch',
             'is_active' => true, 'sort_order' => 1, 'outlet_id' => $blocked->id,
         ]);

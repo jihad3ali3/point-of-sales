@@ -38,7 +38,7 @@ class StockTransferIntegrityTest extends TestCase
         $this->admin->markEmailAsVerified();
         $this->actingAs($this->admin);
 
-        $this->source = Warehouse::create([
+        $this->source = Warehouse::factory()->create([
             'code' => 'GDG-A',
             'name' => 'Gudang A',
             'type' => 'main',
@@ -46,7 +46,7 @@ class StockTransferIntegrityTest extends TestCase
             'sort_order' => 0,
         ]);
 
-        $this->destination = Warehouse::create([
+        $this->destination = Warehouse::factory()->create([
             'code' => 'GDG-B',
             'name' => 'Gudang B',
             'type' => 'branch',

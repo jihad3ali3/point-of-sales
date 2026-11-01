@@ -44,7 +44,7 @@ class HandleInertiaRequestsTest extends TestCase
             'name' => 'Outlet '.$code,
         ]);
 
-        $warehouse = Warehouse::create([
+        $warehouse = Warehouse::factory()->create([
             'code' => 'WH-'.$code,
             'name' => 'Gudang '.$code,
             'type' => 'branch',

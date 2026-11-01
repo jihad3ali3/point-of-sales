@@ -7,7 +7,6 @@ use App\Http\Requests\CloseCashierShiftRequest;
 use App\Http\Requests\ConfirmPasswordForForceCloseRequest;
 use App\Http\Requests\StoreCashierShiftRequest;
 use App\Models\CashierShift;
-use App\Models\Outlet;
 use App\Models\ShiftCashMovement;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -89,7 +88,7 @@ class CashierShiftController extends Controller
             actor: $request->user(),
             openingCash: (int) $request->validated('opening_cash'),
             notes: $request->validated('notes'),
-            warehouseId: $warehouse?->id,
+            warehouseId: $warehouse->id,
         );
 
         $this->auditLogService->log(
@@ -226,10 +225,6 @@ class CashierShiftController extends Controller
 
         if (! $user->can('cashier-shifts-force-close')) {
             return collect([$user->only(['id', 'name'])]);
-        }
-
-        if (Outlet::active()->count() <= 1) {
-            return User::query()->orderBy('name')->get(['id', 'name']);
         }
 
         $outletIds = $this->outletAccessService->accessibleOutlets($user)->pluck('id')->all();
